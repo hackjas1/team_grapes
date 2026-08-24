@@ -3403,21 +3403,31 @@ const AdminApp = {
 
         if (!navEl) return;
 
-        if (last <= 1) {
-            navEl.innerHTML = '';
-            return;
-        }
-
         let html = '';
 
         // Previous button
         html += `
-            <li class="page-item ${current === 1 ? 'disabled' : ''}">
-                <button class="page-link py-1 px-2" onclick="AdminApp.goToUsersPage(${current - 1})" ${current === 1 ? 'disabled' : ''} title="Previous Page">
+            <li class="page-item ${current <= 1 ? 'disabled' : ''}">
+                <button class="page-link py-1 px-2" onclick="AdminApp.goToUsersPage(${current - 1})" ${current <= 1 ? 'disabled' : ''} title="Previous Page">
                     <i class="bi bi-chevron-left"></i>
                 </button>
             </li>
         `;
+
+        if (last <= 1) {
+            html += `
+                <li class="page-item active">
+                    <button class="page-link py-1 px-2 fw-semibold">1</button>
+                </li>
+                <li class="page-item disabled">
+                    <button class="page-link py-1 px-2" disabled title="Next Page">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </li>
+            `;
+            navEl.innerHTML = html;
+            return;
+        }
 
         // Page numbers
         let startPage = Math.max(1, current - 2);
@@ -3443,8 +3453,8 @@ const AdminApp = {
 
         // Next button
         html += `
-            <li class="page-item ${current === last ? 'disabled' : ''}">
-                <button class="page-link py-1 px-2" onclick="AdminApp.goToUsersPage(${current + 1})" ${current === last ? 'disabled' : ''} title="Next Page">
+            <li class="page-item ${current >= last ? 'disabled' : ''}">
+                <button class="page-link py-1 px-2" onclick="AdminApp.goToUsersPage(${current + 1})" ${current >= last ? 'disabled' : ''} title="Next Page">
                     <i class="bi bi-chevron-right"></i>
                 </button>
             </li>
@@ -3536,25 +3546,25 @@ const AdminApp = {
                         <td class="text-center text-nowrap"><span class="bsis-badge ${u.status === 'active' ? 'bsis-badge-success' : 'bsis-badge-warning'}">${u.status ? u.status.toUpperCase() : 'ACTIVE'}</span></td>
                         <td class="text-center text-nowrap">
                             <div class="dropdown">
-                                <button class="btn btn-sm btn-outline-primary dropdown-toggle py-1 px-2 fw-semibold" type="button" data-bs-toggle="dropdown" data-bs-boundary="viewport" data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false">
-                                    <i class="bi bi-gear-fill"></i> Actions
+                                <button class="btn btn-sm btn-outline-primary dropdown-toggle py-1 px-2 fw-semibold shadow-sm d-inline-flex align-items-center gap-1" type="button" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false" style="border-radius: 8px; font-size: 0.82rem;">
+                                    <i class="bi bi-gear-fill"></i> <span>Actions</span>
                                 </button>
-                                <ul class="dropdown-menu dropdown-menu-end shadow-lg" style="min-width: 210px; z-index: 1070;">
+                                <ul class="dropdown-menu dropdown-menu-end shadow-lg bsis-action-dropdown">
                                     <li>
-                                        <a class="dropdown-item" href="javascript:void(0)" onclick="AdminApp.editUser(${u.id})">
+                                        <a class="dropdown-item py-2" href="javascript:void(0)" onclick="AdminApp.editUser(${u.id})">
                                             <i class="bi bi-pencil-square text-primary me-2"></i> Edit Account
                                         </a>
                                     </li>
                                     ${isStudent ? `
                                     <li>
-                                        <a class="dropdown-item" href="javascript:void(0)" onclick="AdminApp.resetUserDevice(${u.id})">
+                                        <a class="dropdown-item py-2 text-warning fw-semibold" href="javascript:void(0)" onclick="AdminApp.resetUserDevice(${u.id})">
                                             <i class="bi bi-arrow-repeat text-warning me-2"></i> Reset Bound Phone
                                         </a>
                                     </li>` : ''}
                                     ${isCurrent ? '' : `
                                     <li><hr class="dropdown-divider my-1"></li>
                                     <li>
-                                        <a class="dropdown-item text-danger" href="javascript:void(0)" onclick="AdminApp.promptDeleteUser(${u.id}, '${safeName}')">
+                                        <a class="dropdown-item py-2 text-danger" href="javascript:void(0)" onclick="AdminApp.promptDeleteUser(${u.id}, '${safeName}')">
                                             <i class="bi bi-trash text-danger me-2"></i> Drop User Account
                                         </a>
                                     </li>
