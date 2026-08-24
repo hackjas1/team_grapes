@@ -1175,24 +1175,63 @@ const AdminApp = {
                         </span>
                     </td>
                     <td class="text-center text-nowrap">
-                        <div class="d-inline-flex align-items-center gap-1">
-                            ${e.status === 'active' ? `
-                                <a href="#qr-display?event=${e.id}" class="btn btn-sm btn-info text-white fw-bold py-1 px-3 shadow-sm d-inline-flex align-items-center gap-1" style="border-radius: 20px; font-size: 0.8rem;">
-                                    <i class="bi bi-qr-code"></i> <span>QR Screen</span>
-                                </a>
-                            ` : (e.status === 'upcoming' || e.status === 'draft') ? `
-                                <button type="button" class="btn btn-sm btn-success text-white fw-semibold py-1 px-3 shadow-sm d-inline-flex align-items-center gap-1" onclick="AdminApp.activateEvent(${e.id})" style="border-radius: 20px; font-size: 0.8rem;">
-                                    <i class="bi bi-play-circle-fill"></i> <span>Activate</span>
-                                </button>
-                            ` : `
-                                <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-3 d-inline-flex align-items-center gap-1" onclick="AdminApp.viewEventDetails(${e.id})" style="border-radius: 20px; font-size: 0.8rem;">
-                                    <i class="bi bi-file-earmark-text"></i> <span>Summary</span>
-                                </button>
-                            `}
-
-                            <button type="button" class="btn btn-sm btn-light border py-1 px-2 text-dark fw-semibold d-inline-flex align-items-center gap-1 shadow-sm" onclick="AdminApp.openEventActionHub(${e.id})" title="Manage Event Options" style="border-radius: 20px; font-size: 0.8rem;">
-                                <i class="bi bi-gear-fill text-secondary"></i> <span>Manage</span>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-bsis-primary dropdown-toggle py-1 px-3 fw-semibold shadow-sm d-inline-flex align-items-center gap-1" type="button" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false" style="border-radius: 8px; font-size: 0.82rem;">
+                                <i class="bi bi-gear-fill"></i> <span>Actions</span>
                             </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-lg bsis-action-dropdown">
+                                <li>
+                                    <a class="dropdown-item py-2" href="javascript:void(0)" onclick="AdminApp.viewEventDetails(${e.id})">
+                                        <i class="bi bi-info-circle-fill text-primary me-2"></i> View Event Details
+                                    </a>
+                                </li>
+                                ${(e.status === 'upcoming' || e.status === 'active' || e.status === 'draft') ? `
+                                <li>
+                                    <a class="dropdown-item py-2" href="javascript:void(0)" onclick="AdminApp.editEvent(${e.id})">
+                                        <i class="bi bi-pencil-square text-primary me-2"></i> Edit Event Details
+                                    </a>
+                                </li>` : ''}
+                                
+                                ${e.status === 'active' ? `
+                                <li>
+                                    <a class="dropdown-item py-2 text-info fw-bold" href="#qr-display?event=${e.id}">
+                                        <i class="bi bi-qr-code text-info me-2"></i> Dynamic QR Display
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2 text-warning fw-semibold" href="javascript:void(0)" onclick="AdminApp.openEmergencyBypassModal(${e.id}, '${titleEscaped}')">
+                                        <i class="bi bi-lightning-charge-fill text-warning me-2"></i> Emergency Bypass
+                                    </a>
+                                </li>` : ''}
+                                
+                                ${(e.status === 'draft' || e.status === 'upcoming') ? `
+                                <li>
+                                    <a class="dropdown-item py-2 text-success fw-bold" href="javascript:void(0)" onclick="AdminApp.activateEvent(${e.id})">
+                                        <i class="bi bi-play-circle text-success me-2"></i> Activate Event
+                                    </a>
+                                </li>` : ''}
+                                
+                                ${e.status === 'active' ? `
+                                <li>
+                                    <a class="dropdown-item py-2 text-secondary fw-semibold" href="javascript:void(0)" onclick="AdminApp.completeEvent(${e.id}, '${titleEscaped}')">
+                                        <i class="bi bi-check2-circle text-secondary me-2"></i> Conclude & Process Absences
+                                    </a>
+                                </li>` : ''}
+                                ${e.status === 'completed' ? `
+                                <li>
+                                    <a class="dropdown-item py-2 text-warning fw-semibold" href="javascript:void(0)" onclick="AdminApp.processEventAbsences(${e.id})">
+                                        <i class="bi bi-calculator text-warning me-2"></i> Re-Process Absences & Fines
+                                    </a>
+                                </li>` : ''}
+                                
+                                ${isAdmin ? `
+                                <li><hr class="dropdown-divider my-1"></li>
+                                <li>
+                                    <a class="dropdown-item py-2 text-danger" href="javascript:void(0)" onclick="AdminApp.promptDeleteEvent(${e.id}, '${titleEscaped}')">
+                                        <i class="bi bi-trash text-danger me-2"></i> Drop Event
+                                    </a>
+                                </li>` : ''}
+                            </ul>
                         </div>
                     </td>
                 </tr>
