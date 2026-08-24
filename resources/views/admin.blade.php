@@ -3389,21 +3389,64 @@
 
     <!-- MODAL 3: BATCH CSV IMPORT -->
     <div class="modal fade" id="modal-csv-import" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content border-0">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: var(--radius-card); overflow: hidden;">
                 <form onsubmit="AdminApp.handleCsvImport(event)">
-                    <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title fw-bold">Batch CSV Student Upload</h5>
+                    <div class="modal-header bg-primary text-white py-3 px-4">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center bg-white text-primary" style="width: 36px; height: 36px;">
+                                <i class="bi bi-file-earmark-spreadsheet-fill" style="font-size: 1.15rem;"></i>
+                            </div>
+                            <div>
+                                <h5 class="modal-title fw-bold mb-0">Batch CSV Student Provisioning</h5>
+                                <small class="text-light" style="opacity: 0.85;">Register multiple student profiles simultaneously</small>
+                            </div>
+                        </div>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
-                    <div class="modal-body p-4 text-center">
-                        <i class="bi bi-file-earmark-spreadsheet text-primary display-4 mb-3 d-block"></i>
-                        <p class="text-muted small mb-3">Upload a CSV file containing columns: <code>student_number, first_name, middle_name, last_name, email, year_level, block</code>.</p>
-                        <input type="file" id="csv-file-input" accept=".csv" class="bsis-form-control mb-3" required>
+                    <div class="modal-body p-4">
+                        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2 mb-3 pb-3 border-bottom">
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1"><i class="bi bi-info-circle text-primary me-1"></i> Required CSV Format</h6>
+                                <p class="text-muted small mb-0">Your CSV file must include these 7 column headers in order:</p>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-success fw-bold text-nowrap d-inline-flex align-items-center gap-1 shadow-sm" onclick="AdminApp.downloadCsvTemplate()">
+                                <i class="bi bi-download"></i> Download Sample CSV
+                            </button>
+                        </div>
+
+                        <!-- Column Guide Table -->
+                        <div class="table-responsive mb-3 border rounded">
+                            <table class="table table-sm table-striped small mb-0" style="font-size: 0.78rem;">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Header Name</th>
+                                        <th>Required?</th>
+                                        <th>Example Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>1</td><td><code>student_number</code></td><td><span class="badge bg-danger">Required</span></td><td>2024-00101</td></tr>
+                                    <tr><td>2</td><td><code>first_name</code></td><td><span class="badge bg-danger">Required</span></td><td>Juan</td></tr>
+                                    <tr><td>3</td><td><code>middle_name</code></td><td><span class="badge bg-secondary">Optional</span></td><td>Dela</td></tr>
+                                    <tr><td>4</td><td><code>last_name</code></td><td><span class="badge bg-danger">Required</span></td><td>Cruz</td></tr>
+                                    <tr><td>5</td><td><code>email</code></td><td><span class="badge bg-danger">Required</span></td><td>juan.cruz@tpc.edu.ph</td></tr>
+                                    <tr><td>6</td><td><code>year_level</code></td><td><span class="badge bg-secondary">Optional</span></td><td>1st Year / 2nd Year / 3rd Year / 4th Year</td></tr>
+                                    <tr><td>7</td><td><code>block</code></td><td><span class="badge bg-secondary">Optional</span></td><td>Block 1 ... Block 20</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="bsis-form-label fw-bold"><i class="bi bi-upload me-1"></i> Select CSV File</label>
+                            <input type="file" id="csv-file-input" accept=".csv,text/csv" class="bsis-form-control" required>
+                            <small class="text-muted"><i class="bi bi-shield-check text-success"></i> Each student will be provisioned with a secure 48-hour onboarding email token.</small>
+                        </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-bsis-outline" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-bsis-primary fw-bold">Start CSV Import</button>
+                    <div class="modal-footer justify-content-between bg-light py-2 px-4">
+                        <button type="button" class="btn btn-bsis-outline btn-sm fw-semibold" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-bsis-primary btn-sm fw-bold px-4"><i class="bi bi-cloud-arrow-up-fill me-1"></i> Start Batch Upload</button>
                     </div>
                 </form>
             </div>

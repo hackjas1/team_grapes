@@ -3853,15 +3853,37 @@ const AdminApp = {
         });
     },
 
-    async handleCsvImport(event) {
-        event.preventDefault();
+    downloadCsvTemplate() {
+        const headers = ['student_number', 'first_name', 'middle_name', 'last_name', 'email', 'year_level', 'block'];
+        const sampleRows = [
+            ['2024-00101', 'Juan', 'Dela', 'Cruz', 'juan.cruz@tpc.edu.ph', '1st Year', 'Block 1'],
+            ['2024-00102', 'Maria', 'Santos', 'Clara', 'maria.clara@tpc.edu.ph', '1st Year', 'Block 1'],
+            ['2023-00045', 'Jose', 'Protacio', 'Rizal', 'jose.rizal@tpc.edu.ph', '2nd Year', 'Block 2'],
+            ['2022-00088', 'Andres', 'Castro', 'Bonifacio', 'andres.bonifacio@tpc.edu.ph', '3rd Year', 'Block 1'],
+            ['2021-00012', 'Gabriela', 'Silang', 'Cariño', 'gabriela.silang@tpc.edu.ph', '4th Year', 'Block 3']
+        ];
+
+        const csvContent = [headers.join(','), ...sampleRows.map(r => r.join(','))].join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'tpc_bsis_student_import_template.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    },
+
+    async handleCsvImport(e) {
+        e.preventDefault();
         const fileInput = document.getElementById('csv-file-input');
-        if (!fileInput.files || fileInput.files.length === 0) {
+        if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
             alert('Please select a CSV file to upload.');
             return;
         }
 
         const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
         formData.append('csv_file', fileInput.files[0]);
 
         const token = StorageManager.getToken();
@@ -3874,10 +3896,11 @@ const AdminApp = {
         const res = await response.json();
         if (response.ok && res.success) {
             bootstrap.Modal.getInstance(document.getElementById('modal-csv-import')).hide();
-            alert(`CSV Import Complete!\nTotal Processed: ${res.data.total_rows}\nCreated: ${res.data.created_count}\nFailed: ${res.data.failed_count}`);
+            fileInput.value = '';
+            alert(`✅ CSV Import Successful!\n\n• Total Records Processed: ${res.data.total_rows}\n• Successfully Created: ${res.data.created_count}\n• Failed / Duplicates: ${res.data.failed_count}`);
             this.loadUsers();
         } else {
-            alert(res.message || 'CSV Import failed.');
+            alert(res.message || 'CSV Import failed. Please verify your column headers and data formats.');
         }
     },
 

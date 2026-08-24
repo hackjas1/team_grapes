@@ -99,7 +99,11 @@ class StudentProvisioningController extends Controller
     public function import(ImportStudentsRequest $request): JsonResponse
     {
         $admin = $request->user();
-        $file = $request->file('file');
+        $file = $request->file('file') ?? $request->file('csv_file');
+
+        if (!$file) {
+            return $this->errorResponse('Please upload a valid CSV file.', [], 422);
+        }
 
         $handle = fopen($file->getRealPath(), 'r');
         if (!$handle) {

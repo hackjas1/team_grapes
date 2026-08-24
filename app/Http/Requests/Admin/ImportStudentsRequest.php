@@ -14,7 +14,8 @@ class ImportStudentsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'file' => ['required', 'file', 'mimes:csv,txt', 'max:5120'], // max 5MB CSV file
+            'file' => ['nullable', 'file', 'mimes:csv,txt', 'max:5120'],
+            'csv_file' => ['nullable', 'file', 'mimes:csv,txt', 'max:5120'],
         ];
     }
 }
