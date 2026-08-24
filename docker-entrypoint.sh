@@ -12,14 +12,10 @@ mkdir -p /var/www/html/storage/framework/sessions \
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Clear stale build-time caches
+# Clear stale caches so dynamic runtime config is always used
 php artisan config:clear || true
 php artisan route:clear || true
 php artisan view:clear || true
-
-# Pre-compile blade views and cache routes
-php artisan route:cache || true
-php artisan view:cache || true
 
 # Execute main container command
 exec "$@"
