@@ -3875,15 +3875,15 @@
     <!-- MODAL: VIEW EVENT DETAILS & INFORMATION -->
     <div class="modal fade" id="modal-view-event-details" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content border-0 shadow-lg" style="border-radius: var(--radius-card);">
-                <div class="modal-header bg-primary text-white py-3">
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="bg-white text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
-                            <i class="bi bi-calendar2-event-fill" style="font-size: 1.2rem;"></i>
+            <div class="modal-content border-0 shadow-lg" style="border-radius: var(--radius-card); overflow: hidden;">
+                <div class="modal-header text-white py-3 px-4" style="background: linear-gradient(135deg, #063B5C 0%, #04253A 100%);">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; background: rgba(53, 196, 232, 0.2); color: #35C4E8; font-size: 1.25rem;">
+                            <i class="bi bi-calendar2-event-fill"></i>
                         </div>
                         <div>
-                            <h5 class="modal-title fw-bold mb-0" id="detail-event-title">Event Title</h5>
-                            <small class="text-light" style="opacity: 0.85;">Event Session Details & Attendance Overview</small>
+                            <h5 class="modal-title fw-bold mb-0 text-white" id="detail-event-title" style="font-size: 1.1rem; letter-spacing: -0.01em;">Event Title</h5>
+                            <small class="text-light" style="opacity: 0.85; font-size: 0.82rem;">Event Session Details & Attendance Overview</small>
                         </div>
                     </div>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
