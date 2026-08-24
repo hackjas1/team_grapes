@@ -1873,7 +1873,7 @@
                         <span class="text-muted small" id="users-page-info">Showing 0 of 0 accounts</span>
                         <div class="d-flex align-items-center gap-1">
                             <label for="users-per-page" class="text-muted small mb-0">Show:</label>
-                            <select id="users-per-page" class="form-select form-select-sm py-1 px-2" style="width: auto; font-size: 0.82rem;" onchange="AdminApp.changeUsersPerPage(this.value)">
+                            <select id="users-per-page" class="form-select form-select-sm py-1 ps-2 pe-4" style="width: auto; min-width: 130px; font-size: 0.82rem; border-radius: 8px; cursor: pointer;" onchange="AdminApp.changeUsersPerPage(this.value)">
                                 <option value="25" selected>25 per page</option>
                                 <option value="50">50 per page</option>
                                 <option value="100">100 per page</option>

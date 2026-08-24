@@ -649,6 +649,14 @@ a:hover {
     background-color: rgba(220, 53, 69, 0.1);
 }
 
+/* Form Select Chevron Arrow Clearance */
+.form-select-sm,
+select.form-select-sm,
+select.form-select {
+    padding-right: 2.2rem !important;
+    background-position: right 0.65rem center !important;
+}
+
 /* Event Action Hub Modal Cards */
 .action-hub-card {
     display: flex;
