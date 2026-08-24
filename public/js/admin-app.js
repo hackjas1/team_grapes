@@ -1176,7 +1176,7 @@ const AdminApp = {
                     </td>
                     <td class="text-center text-nowrap">
                         <div class="dropdown">
-                            <button class="btn btn-sm btn-bsis-primary dropdown-toggle py-1 px-3 fw-semibold shadow-sm d-inline-flex align-items-center gap-1" type="button" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false" style="border-radius: 8px; font-size: 0.82rem;">
+                            <button class="btn btn-sm btn-bsis-primary dropdown-toggle py-1 px-3 fw-semibold shadow-sm d-inline-flex align-items-center justify-content-center gap-1" type="button" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false" style="border-radius: 8px; font-size: 0.82rem; min-width: 98px;">
                                 <i class="bi bi-gear-fill"></i> <span>Actions</span>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end shadow-lg bsis-action-dropdown">
@@ -1202,27 +1202,45 @@ const AdminApp = {
                                     <a class="dropdown-item py-2 text-warning fw-semibold" href="javascript:void(0)" onclick="AdminApp.openEmergencyBypassModal(${e.id}, '${titleEscaped}')">
                                         <i class="bi bi-lightning-charge-fill text-warning me-2"></i> Emergency Bypass
                                     </a>
-                                </li>` : ''}
-                                
-                                ${(e.status === 'draft' || e.status === 'upcoming') ? `
-                                <li>
-                                    <a class="dropdown-item py-2 text-success fw-bold" href="javascript:void(0)" onclick="AdminApp.activateEvent(${e.id})">
-                                        <i class="bi bi-play-circle text-success me-2"></i> Activate Event
-                                    </a>
-                                </li>` : ''}
-                                
-                                ${e.status === 'active' ? `
+                                </li>
                                 <li>
                                     <a class="dropdown-item py-2 text-secondary fw-semibold" href="javascript:void(0)" onclick="AdminApp.completeEvent(${e.id}, '${titleEscaped}')">
-                                        <i class="bi bi-check2-circle text-secondary me-2"></i> Conclude & Process Absences
+                                        <i class="bi bi-check2-circle text-secondary me-2"></i> Conclude & Process
                                     </a>
-                                </li>` : ''}
-                                ${e.status === 'completed' ? `
+                                </li>
+                                ` : (e.status === 'upcoming' || e.status === 'draft') ? `
+                                <li>
+                                    <a class="dropdown-item py-2 text-success fw-bold" href="javascript:void(0)" onclick="AdminApp.activateEvent(${e.id})">
+                                        <i class="bi bi-play-circle text-success me-2"></i> Activate Event Now
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2 text-info" href="#qr-display?event=${e.id}">
+                                        <i class="bi bi-qr-code text-info me-2"></i> Preview QR Display
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2 text-secondary" href="javascript:void(0)" onclick="AdminApp.jumpToEventReports(${e.id})">
+                                        <i class="bi bi-file-earmark-bar-graph me-2"></i> Event Audience & Roster
+                                    </a>
+                                </li>
+                                ` : `
+                                <li>
+                                    <a class="dropdown-item py-2 text-primary fw-semibold" href="javascript:void(0)" onclick="AdminApp.jumpToEventReports(${e.id})">
+                                        <i class="bi bi-file-earmark-bar-graph text-primary me-2"></i> Official Event Report
+                                    </a>
+                                </li>
                                 <li>
                                     <a class="dropdown-item py-2 text-warning fw-semibold" href="javascript:void(0)" onclick="AdminApp.processEventAbsences(${e.id})">
-                                        <i class="bi bi-calculator text-warning me-2"></i> Re-Process Absences & Fines
+                                        <i class="bi bi-calculator text-warning me-2"></i> Re-Process Absences
                                     </a>
-                                </li>` : ''}
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2 text-info" href="javascript:void(0)" onclick="AdminApp.jumpToEventReports(${e.id})">
+                                        <i class="bi bi-download text-info me-2"></i> Export Attendance File
+                                    </a>
+                                </li>
+                                `}
                                 
                                 ${isAdmin ? `
                                 <li><hr class="dropdown-divider my-1"></li>
