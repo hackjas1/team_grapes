@@ -32,15 +32,17 @@ WORKDIR /var/www/html
 # Copy application files
 COPY . /var/www/html
 
-# Install dependencies and optimize
+# Install dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Set permissions for Laravel storage and cache
+# Set permissions for entrypoint and Laravel storage
+RUN chmod +x /var/www/html/docker-entrypoint.sh
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Expose default port
 EXPOSE 80
 
-# Start Apache in foreground
+# Entrypoint initializes runtime environment variables before starting Apache
+ENTRYPOINT ["/var/www/html/docker-entrypoint.sh"]
 CMD ["apache2-foreground"]
