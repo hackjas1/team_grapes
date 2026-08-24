@@ -3797,6 +3797,34 @@
                 </form>
             </div>
         </div>
+    <!-- MODAL: EVENT ACTION HUB & QUICK ACTIONS -->
+    <div class="modal fade" id="modal-event-action-hub" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;">
+            <div class="modal-content border-0 shadow-2xl" style="border-radius: 20px; overflow: hidden; background: #ffffff;">
+                <div class="modal-header py-3 px-4" style="background: linear-gradient(135deg, #063B5C 0%, #04253A 100%); color: #ffffff;">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; background: rgba(53, 196, 232, 0.2); color: #35C4E8; font-size: 1.25rem;">
+                            <i class="bi bi-calendar-event"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-0 text-white" id="action-hub-event-title" style="font-size: 1.05rem;">Event Title</h6>
+                            <span class="badge" id="action-hub-event-status-badge" style="font-size: 0.72rem; margin-top: 2px;">ACTIVE</span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-3">
+                    <p class="text-muted small mb-3 px-1">Select an action to execute for this event:</p>
+                    <div class="d-flex flex-column gap-2" id="action-hub-buttons-container">
+                        <!-- Action items injected dynamically by JS -->
+                    </div>
+                </div>
+                <div class="modal-footer py-2 px-3 bg-light border-0 justify-content-between">
+                    <span class="small text-muted"><i class="bi bi-shield-lock me-1"></i> TPC BSIS Attendance Engine</span>
+                    <button type="button" class="btn btn-sm btn-outline-secondary px-3 fw-semibold" data-bs-dismiss="modal" style="border-radius: 8px;">Close</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- MODAL: VIEW EVENT DETAILS & INFORMATION -->

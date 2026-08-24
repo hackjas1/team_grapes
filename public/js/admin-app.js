@@ -1175,37 +1175,24 @@ const AdminApp = {
                         </span>
                     </td>
                     <td class="text-center text-nowrap">
-                        <div class="d-flex align-items-center justify-content-center gap-1">
+                        <div class="d-inline-flex align-items-center gap-1">
                             ${e.status === 'active' ? `
-                                <a href="#qr-display?event=${e.id}" class="btn btn-sm btn-info text-white fw-bold py-1 px-2 shadow-sm d-inline-flex align-items-center gap-1" title="Launch Dynamic QR Screen" style="border-radius: 8px;">
-                                    <i class="bi bi-qr-code"></i> <span>QR</span>
+                                <a href="#qr-display?event=${e.id}" class="btn btn-sm btn-info text-white fw-bold py-1 px-3 shadow-sm d-inline-flex align-items-center gap-1" style="border-radius: 20px; font-size: 0.8rem;">
+                                    <i class="bi bi-qr-code"></i> <span>QR Screen</span>
                                 </a>
-                                <button type="button" class="btn btn-sm btn-warning text-dark fw-bold py-1 px-2 shadow-sm d-inline-flex align-items-center gap-1" onclick="AdminApp.completeEvent(${e.id}, '${titleEscaped}')" title="Conclude Event & Process Absences" style="border-radius: 8px;">
-                                    <i class="bi bi-check2-circle"></i> <span>End</span>
+                            ` : (e.status === 'upcoming' || e.status === 'draft') ? `
+                                <button type="button" class="btn btn-sm btn-success text-white fw-semibold py-1 px-3 shadow-sm d-inline-flex align-items-center gap-1" onclick="AdminApp.activateEvent(${e.id})" style="border-radius: 20px; font-size: 0.8rem;">
+                                    <i class="bi bi-play-circle-fill"></i> <span>Activate</span>
                                 </button>
-                            ` : ''}
-
-                            ${(e.status === 'upcoming' || e.status === 'draft') ? `
-                                <button type="button" class="btn btn-sm btn-success text-white fw-bold py-1 px-2 shadow-sm d-inline-flex align-items-center gap-1" onclick="AdminApp.activateEvent(${e.id})" title="Activate Event" style="border-radius: 8px;">
-                                    <i class="bi bi-play-fill"></i> <span>Start</span>
+                            ` : `
+                                <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-3 d-inline-flex align-items-center gap-1" onclick="AdminApp.viewEventDetails(${e.id})" style="border-radius: 20px; font-size: 0.8rem;">
+                                    <i class="bi bi-file-earmark-text"></i> <span>Summary</span>
                                 </button>
-                            ` : ''}
+                            `}
 
-                            <button type="button" class="btn btn-sm btn-light border text-primary py-1 px-2" onclick="AdminApp.viewEventDetails(${e.id})" title="View Details" style="border-radius: 8px;">
-                                <i class="bi bi-eye-fill"></i>
+                            <button type="button" class="btn btn-sm btn-light border py-1 px-2 text-dark fw-semibold d-inline-flex align-items-center gap-1 shadow-sm" onclick="AdminApp.openEventActionHub(${e.id})" title="Manage Event Options" style="border-radius: 20px; font-size: 0.8rem;">
+                                <i class="bi bi-gear-fill text-secondary"></i> <span>Manage</span>
                             </button>
-
-                            ${(e.status === 'upcoming' || e.status === 'active' || e.status === 'draft') ? `
-                                <button type="button" class="btn btn-sm btn-light border text-secondary py-1 px-2" onclick="AdminApp.editEvent(${e.id})" title="Edit Event" style="border-radius: 8px;">
-                                    <i class="bi bi-pencil-fill"></i>
-                                </button>
-                            ` : ''}
-
-                            ${isAdmin ? `
-                                <button type="button" class="btn btn-sm btn-light border text-danger py-1 px-2" onclick="AdminApp.promptDeleteEvent(${e.id}, '${titleEscaped}')" title="Drop / Delete Event" style="border-radius: 8px;">
-                                    <i class="bi bi-trash-fill"></i>
-                                </button>
-                            ` : ''}
                         </div>
                     </td>
                 </tr>
@@ -2040,6 +2027,143 @@ const AdminApp = {
                 }
             }
         });
+    },
+
+    async openEventActionHub(eventId) {
+        const res = await StorageManager.apiRequest(`/api/events/${eventId}`);
+        if (!res.ok || !res.data.success) {
+            alert(res.data?.message || 'Failed to load event details.');
+            return;
+        }
+
+        const e = res.data.data.event;
+        const user = StorageManager.getUser();
+        const isAdmin = user && user.role === 'admin';
+        const titleEscaped = (e.title || '').replace(/'/g, "\\'");
+
+        document.getElementById('action-hub-event-title').innerText = e.title;
+        const statusBadge = document.getElementById('action-hub-event-status-badge');
+        if (statusBadge) {
+            const isAct = e.status === 'active';
+            const isUpc = e.status === 'upcoming' || e.status === 'draft';
+            statusBadge.className = `badge ${isAct ? 'bg-info text-dark' : (isUpc ? 'bg-warning text-dark' : 'bg-success text-white')}`;
+            statusBadge.innerText = (e.status || 'upcoming').toUpperCase();
+        }
+
+        const container = document.getElementById('action-hub-buttons-container');
+        let html = '';
+
+        if (e.status === 'active') {
+            html += `
+                <a href="#qr-display?event=${e.id}" onclick="bootstrap.Modal.getInstance(document.getElementById('modal-event-action-hub'))?.hide()" class="action-hub-card">
+                    <div class="action-hub-icon qr"><i class="bi bi-qr-code"></i></div>
+                    <div class="action-hub-info">
+                        <div class="action-hub-title text-info">Launch Dynamic QR Display</div>
+                        <div class="action-hub-desc">Open live auto-refreshing QR projector screen</div>
+                    </div>
+                    <i class="bi bi-chevron-right text-muted"></i>
+                </a>
+                <button type="button" onclick="AdminApp.closeActionHubAndDo(() => AdminApp.openEmergencyBypassModal(${e.id}, '${titleEscaped}'))" class="action-hub-card">
+                    <div class="action-hub-icon bypass"><i class="bi bi-lightning-charge-fill"></i></div>
+                    <div class="action-hub-info">
+                        <div class="action-hub-title text-warning">Emergency Window Bypass</div>
+                        <div class="action-hub-desc">Temporarily open attendance scanning window</div>
+                    </div>
+                    <i class="bi bi-chevron-right text-muted"></i>
+                </button>
+            `;
+        }
+
+        if (e.status === 'upcoming' || e.status === 'draft') {
+            html += `
+                <button type="button" onclick="AdminApp.closeActionHubAndDo(() => AdminApp.activateEvent(${e.id}))" class="action-hub-card">
+                    <div class="action-hub-icon activate"><i class="bi bi-play-circle-fill"></i></div>
+                    <div class="action-hub-info">
+                        <div class="action-hub-title text-success">Activate Event Now</div>
+                        <div class="action-hub-desc">Start event and enable attendance scanning</div>
+                    </div>
+                    <i class="bi bi-chevron-right text-muted"></i>
+                </button>
+            `;
+        }
+
+        html += `
+            <button type="button" onclick="AdminApp.closeActionHubAndDo(() => AdminApp.viewEventDetails(${e.id}))" class="action-hub-card">
+                <div class="action-hub-icon info"><i class="bi bi-info-circle-fill"></i></div>
+                <div class="action-hub-info">
+                    <div class="action-hub-title">View Event Details & Map</div>
+                    <div class="action-hub-desc">View scanning statistics, schedule, and venue radius</div>
+                </div>
+                <i class="bi bi-chevron-right text-muted"></i>
+            </button>
+        `;
+
+        if (e.status === 'upcoming' || e.status === 'active' || e.status === 'draft') {
+            html += `
+                <button type="button" onclick="AdminApp.closeActionHubAndDo(() => AdminApp.editEvent(${e.id}))" class="action-hub-card">
+                    <div class="action-hub-icon edit"><i class="bi bi-pencil-square"></i></div>
+                    <div class="action-hub-info">
+                        <div class="action-hub-title">Edit Event Settings</div>
+                        <div class="action-hub-desc">Modify date, time windows, venue geofence, and fines</div>
+                    </div>
+                    <i class="bi bi-chevron-right text-muted"></i>
+                </button>
+            `;
+        }
+
+        if (e.status === 'active') {
+            html += `
+                <button type="button" onclick="AdminApp.closeActionHubAndDo(() => AdminApp.completeEvent(${e.id}, '${titleEscaped}'))" class="action-hub-card">
+                    <div class="action-hub-icon conclude"><i class="bi bi-check2-circle"></i></div>
+                    <div class="action-hub-info">
+                        <div class="action-hub-title text-secondary">Conclude Event & Process Absences</div>
+                        <div class="action-hub-desc">Lock scanning and automatically calculate missed scan fines</div>
+                    </div>
+                    <i class="bi bi-chevron-right text-muted"></i>
+                </button>
+            `;
+        }
+
+        if (e.status === 'completed') {
+            html += `
+                <button type="button" onclick="AdminApp.closeActionHubAndDo(() => AdminApp.processEventAbsences(${e.id}))" class="action-hub-card">
+                    <div class="action-hub-icon calc"><i class="bi bi-calculator"></i></div>
+                    <div class="action-hub-info">
+                        <div class="action-hub-title">Re-Process Absences & Fines</div>
+                        <div class="action-hub-desc">Recalculate attendance penalties and update balances</div>
+                    </div>
+                    <i class="bi bi-chevron-right text-muted"></i>
+                </button>
+            `;
+        }
+
+        if (isAdmin) {
+            html += `
+                <button type="button" onclick="AdminApp.closeActionHubAndDo(() => AdminApp.promptDeleteEvent(${e.id}, '${titleEscaped}'))" class="action-hub-card">
+                    <div class="action-hub-icon delete"><i class="bi bi-trash-fill"></i></div>
+                    <div class="action-hub-info">
+                        <div class="action-hub-title text-danger">Delete / Drop Event</div>
+                        <div class="action-hub-desc">Permanently remove this event record</div>
+                    </div>
+                    <i class="bi bi-chevron-right text-danger"></i>
+                </button>
+            `;
+        }
+
+        container.innerHTML = html;
+
+        const modalEl = document.getElementById('modal-event-action-hub');
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    },
+
+    closeActionHubAndDo(callback) {
+        const modalEl = document.getElementById('modal-event-action-hub');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+        setTimeout(() => {
+            if (typeof callback === 'function') callback();
+        }, 250);
     },
 
     async viewEventDetails(eventId) {
