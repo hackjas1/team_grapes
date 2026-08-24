@@ -1147,29 +1147,8 @@ const AdminApp = {
         const res = await StorageManager.apiRequest(`/api/events?${queryParams.toString()}`);
         if (!table) return;
         if (res.ok && res.data && res.data.data && res.data.data.data && res.data.data.data.length > 0) {
-            table.innerHTML = res.data.data.data.map((e, idx, arr) => {
-                const isDropup = arr.length <= 3 || idx >= (arr.length - 2);
-                let quickActionHtml = '';
-                if (e.status === 'active') {
-                    quickActionHtml = `
-                        <a href="#qr-display?event=${e.id}" class="btn btn-sm btn-info text-white fw-bold py-1 px-2 me-1 shadow-sm d-inline-flex align-items-center gap-1" title="Open Live Dynamic QR Display">
-                            <i class="bi bi-qr-code"></i> <span class="d-none d-md-inline">QR Display</span>
-                        </a>
-                    `;
-                } else if (e.status === 'upcoming' || e.status === 'draft') {
-                    quickActionHtml = `
-                        <button type="button" class="btn btn-sm btn-success text-white fw-semibold py-1 px-2 me-1 shadow-sm d-inline-flex align-items-center gap-1" onclick="AdminApp.activateEvent(${e.id})" title="Activate Event Now">
-                            <i class="bi bi-play-circle-fill"></i> <span class="d-none d-md-inline">Activate</span>
-                        </button>
-                    `;
-                } else {
-                    quickActionHtml = `
-                        <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2 me-1 d-inline-flex align-items-center gap-1" onclick="AdminApp.viewEventDetails(${e.id})" title="View Full Details">
-                            <i class="bi bi-info-circle-fill text-primary"></i> <span class="d-none d-md-inline">Details</span>
-                        </button>
-                    `;
-                }
-
+            table.innerHTML = res.data.data.data.map(e => {
+                const titleEscaped = (e.title || '').replace(/'/g, "\\'");
                 return `
                 <tr>
                     <td class="sticky-col-1 text-center">
@@ -1190,68 +1169,43 @@ const AdminApp = {
                     <td class="text-nowrap">${e.venue_name} (${e.allowed_radius_meters}m)</td>
                     <td class="text-nowrap">${this.formatEventDisplayDateTime(e.start_time)}</td>
                     <td class="text-nowrap">₱${parseFloat(e.fine_amount).toFixed(2)}</td>
-                    <td class="text-center text-nowrap"><span class="bsis-badge ${e.status === 'active' ? 'bsis-badge-event-active' : (e.status === 'upcoming' ? 'bsis-badge-event-upcoming' : 'bsis-badge-event-completed')}">${e.status === 'active' ? '<i class="bi bi-broadcast me-1"></i> ACTIVE' : (e.status === 'upcoming' ? '<i class="bi bi-hourglass-split me-1"></i> UPCOMING' : '<i class="bi bi-check-circle me-1"></i> COMPLETED')}</span></td>
                     <td class="text-center text-nowrap">
-                        <div class="d-inline-flex align-items-center">
-                            ${quickActionHtml}
-                            <div class="btn-group ${isDropup ? 'dropup' : 'dropdown'}">
-                                <button class="btn btn-sm btn-outline-primary dropdown-toggle py-1 px-2 fw-semibold" type="button" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false" title="More Options">
-                                    <i class="bi bi-three-dots-vertical"></i>
+                        <span class="bsis-badge ${e.status === 'active' ? 'bsis-badge-event-active' : (e.status === 'upcoming' ? 'bsis-badge-event-upcoming' : 'bsis-badge-event-completed')}">
+                            ${e.status === 'active' ? '<i class="bi bi-broadcast me-1"></i> ACTIVE' : (e.status === 'upcoming' ? '<i class="bi bi-hourglass-split me-1"></i> UPCOMING' : '<i class="bi bi-check-circle me-1"></i> COMPLETED')}
+                        </span>
+                    </td>
+                    <td class="text-center text-nowrap">
+                        <div class="d-flex align-items-center justify-content-center gap-1">
+                            ${e.status === 'active' ? `
+                                <a href="#qr-display?event=${e.id}" class="btn btn-sm btn-info text-white fw-bold py-1 px-2 shadow-sm d-inline-flex align-items-center gap-1" title="Launch Dynamic QR Screen" style="border-radius: 8px;">
+                                    <i class="bi bi-qr-code"></i> <span>QR</span>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-warning text-dark fw-bold py-1 px-2 shadow-sm d-inline-flex align-items-center gap-1" onclick="AdminApp.completeEvent(${e.id}, '${titleEscaped}')" title="Conclude Event & Process Absences" style="border-radius: 8px;">
+                                    <i class="bi bi-check2-circle"></i> <span>End</span>
                                 </button>
-                                <ul class="dropdown-menu dropdown-menu-end shadow-lg" style="min-width: 220px; z-index: 1080;">
-                                    <li>
-                                        <a class="dropdown-item py-2" href="javascript:void(0)" onclick="AdminApp.viewEventDetails(${e.id})">
-                                            <i class="bi bi-info-circle-fill text-primary me-2"></i> View Event Details
-                                        </a>
-                                    </li>
-                                    ${(e.status === 'upcoming' || e.status === 'active' || e.status === 'draft') ? `
-                                    <li>
-                                        <a class="dropdown-item py-2" href="javascript:void(0)" onclick="AdminApp.editEvent(${e.id})">
-                                            <i class="bi bi-pencil-square text-primary me-2"></i> Edit Event Details
-                                        </a>
-                                    </li>` : ''}
-                                    
-                                    ${e.status === 'active' ? `
-                                    <li>
-                                        <a class="dropdown-item py-2 text-info fw-bold" href="#qr-display?event=${e.id}">
-                                            <i class="bi bi-qr-code text-info me-2"></i> Dynamic QR Display
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item py-2 text-warning fw-semibold" href="javascript:void(0)" onclick="AdminApp.openEmergencyBypassModal(${e.id}, '${e.title.replace(/'/g, "\\'")}')">
-                                            <i class="bi bi-lightning-charge-fill text-warning me-2"></i> Emergency Bypass
-                                        </a>
-                                    </li>` : ''}
-                                    
-                                    ${(e.status === 'draft' || e.status === 'upcoming') ? `
-                                    <li>
-                                        <a class="dropdown-item py-2 text-success fw-bold" href="javascript:void(0)" onclick="AdminApp.activateEvent(${e.id})">
-                                            <i class="bi bi-play-circle text-success me-2"></i> Activate Event
-                                        </a>
-                                    </li>` : ''}
-                                    
-                                    ${e.status === 'active' ? `
-                                    <li>
-                                        <a class="dropdown-item py-2 text-secondary fw-semibold" href="javascript:void(0)" onclick="AdminApp.completeEvent(${e.id}, '${e.title.replace(/'/g, "\\'")}')">
-                                            <i class="bi bi-check2-circle text-secondary me-2"></i> Conclude & Process Absences
-                                        </a>
-                                    </li>` : ''}
-                                    ${e.status === 'completed' ? `
-                                    <li>
-                                        <a class="dropdown-item py-2 text-warning fw-semibold" href="javascript:void(0)" onclick="AdminApp.processEventAbsences(${e.id})">
-                                            <i class="bi bi-calculator text-warning me-2"></i> Re-Process Absences & Fines
-                                        </a>
-                                    </li>` : ''}
-                                    
-                                    ${isAdmin ? `
-                                    <li><hr class="dropdown-divider my-1"></li>
-                                    <li>
-                                        <a class="dropdown-item py-2 text-danger" href="javascript:void(0)" onclick="AdminApp.promptDeleteEvent(${e.id}, '${e.title.replace(/'/g, "\\'")}')">
-                                            <i class="bi bi-trash text-danger me-2"></i> Drop Event
-                                        </a>
-                                    </li>` : ''}
-                                </ul>
-                            </div>
+                            ` : ''}
+
+                            ${(e.status === 'upcoming' || e.status === 'draft') ? `
+                                <button type="button" class="btn btn-sm btn-success text-white fw-bold py-1 px-2 shadow-sm d-inline-flex align-items-center gap-1" onclick="AdminApp.activateEvent(${e.id})" title="Activate Event" style="border-radius: 8px;">
+                                    <i class="bi bi-play-fill"></i> <span>Start</span>
+                                </button>
+                            ` : ''}
+
+                            <button type="button" class="btn btn-sm btn-light border text-primary py-1 px-2" onclick="AdminApp.viewEventDetails(${e.id})" title="View Details" style="border-radius: 8px;">
+                                <i class="bi bi-eye-fill"></i>
+                            </button>
+
+                            ${(e.status === 'upcoming' || e.status === 'active' || e.status === 'draft') ? `
+                                <button type="button" class="btn btn-sm btn-light border text-secondary py-1 px-2" onclick="AdminApp.editEvent(${e.id})" title="Edit Event" style="border-radius: 8px;">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </button>
+                            ` : ''}
+
+                            ${isAdmin ? `
+                                <button type="button" class="btn btn-sm btn-light border text-danger py-1 px-2" onclick="AdminApp.promptDeleteEvent(${e.id}, '${titleEscaped}')" title="Drop / Delete Event" style="border-radius: 8px;">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            ` : ''}
                         </div>
                     </td>
                 </tr>
