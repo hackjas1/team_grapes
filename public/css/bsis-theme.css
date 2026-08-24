@@ -591,6 +591,45 @@ a:hover {
     border-radius: var(--radius-sm);
 }
 
+/* Table Dropdown Overflow & Elevation Enhancements */
+.bsis-table-responsive {
+    min-height: 240px;
+    overflow-x: auto;
+    overflow-y: visible !important;
+}
+
+.bsis-card:has(.bsis-table-responsive) {
+    overflow: visible !important;
+}
+
+.bsis-table td {
+    vertical-align: middle;
+}
+
+.bsis-table .dropdown-menu {
+    border-radius: 12px;
+    border: 1px solid rgba(6, 59, 92, 0.12);
+    box-shadow: 0 12px 36px rgba(6, 59, 92, 0.18) !important;
+    padding: 6px;
+    z-index: 1080 !important;
+}
+
+.bsis-table .dropdown-item {
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 0.86rem;
+    font-weight: 500;
+    transition: all 0.15s ease;
+}
+
+.bsis-table .dropdown-item:hover {
+    background-color: rgba(6, 59, 92, 0.07);
+}
+
+.bsis-table .dropdown-item.text-danger:hover {
+    background-color: rgba(220, 53, 69, 0.08);
+}
+
 /* Forms & Controls */
 .bsis-form-label {
     font-weight: 600;
