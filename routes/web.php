@@ -38,6 +38,9 @@ Route::get('/test-diag', function () {
         $results['database_connected'] = true;
         $results['database_name'] = \Illuminate\Support\Facades\DB::connection()->getDatabaseName();
         $results['users_count'] = \App\Models\User::count();
+        $results['events_count'] = \App\Models\Event::count();
+        $results['attendance_count'] = \App\Models\Attendance::count();
+        $results['devices_count'] = \App\Models\Device::count();
     } catch (\Throwable $e) {
         $results['database_connected'] = false;
         $results['database_error'] = $e->getMessage();

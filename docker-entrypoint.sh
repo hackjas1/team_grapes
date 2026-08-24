@@ -17,9 +17,5 @@ php artisan config:clear || true
 php artisan route:clear || true
 php artisan view:clear || true
 
-# Run database migrations and seed default records automatically
-php artisan migrate --force || true
-php artisan db:seed --force || true
-
 # Execute main container command
 exec "$@"
