@@ -3840,6 +3840,8 @@
                 </form>
             </div>
         </div>
+    </div>
+
     <!-- MODAL: EVENT ACTION HUB & QUICK ACTIONS -->
     <div class="modal fade" id="modal-event-action-hub" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;">
@@ -3975,6 +3977,7 @@
                             </div>
                         </div>
                     </div>
+                </div>
                 <div class="modal-footer d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center gap-2 bg-light py-2 px-3 px-sm-4">
                     <button type="button" class="btn btn-bsis-outline btn-sm fw-semibold order-last order-sm-first py-2 px-3" data-bs-dismiss="modal" style="min-height: 38px; font-size: 0.82rem;">
                         <i class="bi bi-x-lg me-1"></i> Close
