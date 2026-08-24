@@ -1,0 +1,65 @@
+{
+  "expo": {
+    "name": "BSIS Attendance Monitoring System",
+    "slug": "tpc-bsis-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "ph.edu.tpc.bsis.attendance",
+      "infoPlist": {
+        "NSCameraUsageDescription": "BSIS Attendance System requires camera access to scan event QR codes.",
+        "NSLocationWhenInUseUsageDescription": "BSIS Attendance System requires location access to verify student attendance within the event venue radius.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "BSIS Attendance System requires location access to verify student attendance within the event venue radius."
+      }
+    },
+    "android": {
+      "package": "ph.edu.tpc.bsis.attendance",
+      "allowBackup": false,
+      "adaptiveIcon": {
+        "backgroundColor": "#063B5C",
+        "foregroundImage": "./assets/android-icon-foreground.png"
+      },
+      "permissions": [
+        "CAMERA",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-status-bar",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "BSIS Attendance System requires camera access to scan event QR codes."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "BSIS Attendance System requires location access to verify student attendance within the event venue radius."
+        }
+      ],
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#063B5C",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "eb9ce3b9-b81f-475b-9d65-549d5c9e93ea"
+      }
+    }
+  }
+}

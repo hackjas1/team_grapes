@@ -1,0 +1,22 @@
+{
+  "name": "BSIS Event Attendance System — Talibon Polytechnic College",
+  "short_name": "BSIS Attendance",
+  "description": "Secure Dynamic QR Code-Based Attendance Monitoring System with GPS Verification and Device Binding for College Events.",
+  "start_url": "/student",
+  "display": "standalone",
+  "background_color": "#F5F9FC",
+  "theme_color": "#063B5C",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/images/bsis-logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/bsis-logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

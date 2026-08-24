@@ -1,0 +1,12 @@
+tunnel: 2e13e8cd-e818-4e39-a060-927c048ce948
+credentials-file: C:\Users\laros\.cloudflared\2e13e8cd-e818-4e39-a060-927c048ce948.json
+protocol: http2
+
+ingress:
+  - hostname: tpc-bsis.online
+    service: http://127.0.0.1:8000
+  - hostname: www.tpc-bsis.online
+    service: http://127.0.0.1:8000
+  - hostname: api.tpc-bsis.online
+    service: http://127.0.0.1:8000
+  - service: http_status:404
