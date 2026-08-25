@@ -4586,6 +4586,17 @@ const AdminApp = {
         if (res.ok && res.data && res.data.data) {
             const records = res.data.data.data || [];
             
+            // Sort records alphabetically by LAST NAME, then FIRST NAME
+            records.sort((a, b) => {
+                const lastA = (a.user?.last_name || '').toUpperCase();
+                const lastB = (b.user?.last_name || '').toUpperCase();
+                const lastComp = lastA.localeCompare(lastB);
+                if (lastComp !== 0) return lastComp;
+                const firstA = (a.user?.first_name || '').toUpperCase();
+                const firstB = (b.user?.first_name || '').toUpperCase();
+                return firstA.localeCompare(firstB);
+            });
+
             // Calculate statistics
             const totalCount = records.length;
             const presentCount = records.filter(r => r.status === 'present').length;

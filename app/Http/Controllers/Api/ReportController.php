@@ -82,11 +82,7 @@ class ReportController extends Controller
         }
 
         $perPage = (int) $request->query('per_page', 25);
-        $records = $query->join('users', 'attendances.user_id', '=', 'users.id')
-            ->select('attendances.*')
-            ->orderBy('users.last_name', 'asc')
-            ->orderBy('users.first_name', 'asc')
-            ->paginate($perPage);
+        $records = $query->orderBy('scan_time', 'desc')->paginate($perPage);
 
         return $this->successResponse($records, 'Attendance report retrieved successfully.');
     }
