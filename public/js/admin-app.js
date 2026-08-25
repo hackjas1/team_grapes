@@ -4396,7 +4396,7 @@ const AdminApp = {
                 <tr style="page-break-inside: avoid;">
                     <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: center; font-size: 0.74rem;">${idx + 1}</td>
                     <td style="padding: 4px 6px; border: 1px solid #CBD5E1; font-weight: 700; white-space: nowrap; font-size: 0.74rem;">${s.student_number}</td>
-                    <td style="padding: 4px 6px; border: 1px solid #CBD5E1; font-weight: 600; font-size: 0.74rem;">${s.full_name}</td>
+                    <td style="padding: 4px 6px; border: 1px solid #CBD5E1; font-weight: 600; white-space: nowrap; font-size: 0.74rem;">${s.full_name}</td>
                     <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: center; white-space: nowrap; font-size: 0.74rem;">${yrBlk}</td>
                     <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: right; font-weight: 700; white-space: nowrap; font-size: 0.74rem;">₱${s.total_incurred.toFixed(2)}</td>
                     <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: right; font-weight: 700; color: #16A34A; white-space: nowrap; font-size: 0.74rem;">₱${s.total_paid.toFixed(2)}</td>
@@ -4420,8 +4420,7 @@ const AdminApp = {
                         </div>
                     </div>
                     <div style="text-align: right; font-size: 0.70rem; color: #64748B; line-height: 1.3;">
-                        <strong>Date Generated:</strong> ${printDate}<br>
-                        <strong>Issued By:</strong> ${user ? user.full_name : 'System BSIS Administrator'}
+                        <strong>Date Generated:</strong> ${printDate}
                     </div>
                 </div>
 
@@ -4455,20 +4454,18 @@ const AdminApp = {
                     </tbody>
                 </table>
 
-                <div style="margin-top: 30px; display: flex; justify-content: space-between; text-align: center; font-size: 0.74rem; color: #1E293B; page-break-inside: avoid;">
-                    <div style="width: 220px;">
-                        <div style="height: 45px;"></div>
-                        <div style="border-bottom: 1.5px solid #0F172A; padding-bottom: 2px; margin-bottom: 2px;">
-                            <strong>${user ? user.full_name : 'System BSIS Administrator'}</strong>
-                        </div>
-                        <span style="color: #64748B; font-size: 0.68rem; font-weight: 500;">BSIS Attendance Officer / Treasurer</span>
+                <div style="margin-top: 35px; display: flex; justify-content: space-between; text-align: center; font-size: 0.74rem; color: #1E293B; page-break-inside: avoid;">
+                    <div style="width: 240px;">
+                        <div style="height: 50px;"></div>
+                        <div style="border-bottom: 1.5px solid #0F172A; margin-bottom: 5px;"></div>
+                        <strong style="display: block; color: #0F172A; font-size: 0.76rem;">BSIS Attendance Officer / Treasurer</strong>
+                        <span style="color: #64748B; font-size: 0.68rem;">Signature over Printed Name</span>
                     </div>
-                    <div style="width: 220px;">
-                        <div style="height: 45px;"></div>
-                        <div style="border-bottom: 1.5px solid #0F172A; padding-bottom: 2px; margin-bottom: 2px;">
-                            <strong>Program Head / Dean</strong>
-                        </div>
-                        <span style="color: #64748B; font-size: 0.68rem; font-weight: 500;">BSIS Department / College</span>
+                    <div style="width: 240px;">
+                        <div style="height: 50px;"></div>
+                        <div style="border-bottom: 1.5px solid #0F172A; margin-bottom: 5px;"></div>
+                        <strong style="display: block; color: #0F172A; font-size: 0.76rem;">BSIS Department Head</strong>
+                        <span style="color: #64748B; font-size: 0.68rem;">Signature over Printed Name</span>
                     </div>
                 </div>
             </div>
@@ -4915,20 +4912,18 @@ const AdminApp = {
                     </tbody>
                 </table>
 
-                <div style="margin-top: 25px; display: flex; justify-content: space-between; text-align: center; font-size: 0.72rem; color: #1E293B; page-break-inside: avoid;">
-                    <div style="width: 210px;">
-                        <div style="height: 45px;"></div>
-                        <div style="border-bottom: 1.5px solid #0F172A; padding-bottom: 2px; margin-bottom: 2px;">
-                            <strong>${user ? user.full_name : 'System BSIS Administrator'}</strong>
-                        </div>
-                        <span style="color: #64748B; font-size: 0.68rem; font-weight: 500;">BSIS Attendance Officer / Staff In-Charge</span>
+                <div style="margin-top: 35px; display: flex; justify-content: space-between; text-align: center; font-size: 0.74rem; color: #1E293B; page-break-inside: avoid;">
+                    <div style="width: 240px;">
+                        <div style="height: 50px;"></div>
+                        <div style="border-bottom: 1.5px solid #0F172A; margin-bottom: 5px;"></div>
+                        <strong style="display: block; color: #0F172A; font-size: 0.76rem;">BSIS Attendance Officer / Staff In-Charge</strong>
+                        <span style="color: #64748B; font-size: 0.68rem;">Signature over Printed Name</span>
                     </div>
-                    <div style="width: 210px;">
-                        <div style="height: 45px;"></div>
-                        <div style="border-bottom: 1.5px solid #0F172A; padding-bottom: 2px; margin-bottom: 2px;">
-                            <strong>Program Head</strong>
-                        </div>
-                        <span style="color: #64748B; font-size: 0.68rem; font-weight: 500;">BSIS Department / College</span>
+                    <div style="width: 240px;">
+                        <div style="height: 50px;"></div>
+                        <div style="border-bottom: 1.5px solid #0F172A; margin-bottom: 5px;"></div>
+                        <strong style="display: block; color: #0F172A; font-size: 0.76rem;">BSIS Department Head</strong>
+                        <span style="color: #64748B; font-size: 0.68rem;">Signature over Printed Name</span>
                     </div>
                 </div>
             </div>
