@@ -4466,7 +4466,7 @@ const AdminApp = {
                             <th style="padding: 4px 6px; border: 1px solid #063B5C; text-align: right; width: 75px;">Paid</th>
                             <th style="padding: 4px 6px; border: 1px solid #063B5C; text-align: right; width: 85px;">Balance Due</th>
                             <th style="padding: 4px 6px; border: 1px solid #063B5C; text-align: center; width: 75px;">Status</th>
-                            <th style="padding: 4px 6px; border: 1px solid #063B5C; text-align: center; width: 110px;">Signature / Date</th>
+                            <th style="padding: 4px 6px; border: 1px solid #063B5C; text-align: center; width: 110px;">Signature</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -4927,7 +4927,7 @@ const AdminApp = {
                             <th style="padding: 4px 6px; border: 1px solid #063B5C; text-align: right; width: 75px;">Paid</th>
                             <th style="padding: 4px 6px; border: 1px solid #063B5C; text-align: right; width: 85px;">Balance Due</th>
                             <th style="padding: 4px 6px; border: 1px solid #063B5C; text-align: center; width: 75px;">Status</th>
-                            <th style="padding: 4px 6px; border: 1px solid #063B5C; text-align: center; width: 110px;">Signature / Date</th>
+                            <th style="padding: 4px 6px; border: 1px solid #063B5C; text-align: center; width: 110px;">Signature</th>
                         </tr>
                     </thead>
                     <tbody>
