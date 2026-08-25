@@ -68,25 +68,29 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('events')->group(function () {
         Route::get('/', [EventController::class, 'index']);
         Route::get('/{id}', [EventController::class, 'show']);
-        Route::put('/{id}', [EventController::class, 'update']);
-        Route::post('/{id}/activate', [EventController::class, 'activate']);
-        Route::post('/{id}/complete', [EventController::class, 'complete']);
-        Route::post('/{id}/process-absences', [EventController::class, 'processAbsences']);
-        Route::post('/{id}/toggle-bypass', [EventController::class, 'toggleBypass']);
-        Route::get('/{event}/staff', [EventStaffController::class, 'index']);
-        Route::post('/{event}/qr-token', [DynamicQrController::class, 'generate']);
+
+        // Staff & Admin Event Operations
+        Route::middleware('role:admin,event_staff')->group(function () {
+            Route::put('/{id}', [EventController::class, 'update']);
+            Route::post('/{id}/activate', [EventController::class, 'activate']);
+            Route::post('/{id}/complete', [EventController::class, 'complete']);
+            Route::post('/{id}/process-absences', [EventController::class, 'processAbsences']);
+            Route::post('/{id}/toggle-bypass', [EventController::class, 'toggleBypass']);
+            Route::get('/{event}/staff', [EventStaffController::class, 'index']);
+            Route::post('/{event}/qr-token', [DynamicQrController::class, 'generate']);
+        });
     });
 
     // Attendance Engine & Manual Override
     Route::prefix('attendance')->group(function () {
         Route::post('/scan', [AttendanceController::class, 'scan']);
-        Route::post('/override', [ManualOverrideController::class, 'store']);
         Route::get('/', [AttendanceController::class, 'index']);
         Route::get('/{id}', [AttendanceController::class, 'show']);
+        Route::post('/override', [ManualOverrideController::class, 'store'])->middleware('role:admin,event_staff');
     });
 
     // Offline Batch Attendance Synchronization
-    Route::prefix('sync')->group(function () {
+    Route::prefix('sync')->middleware('role:admin,event_staff')->group(function () {
         Route::post('/attendance', [AttendanceSyncController::class, 'sync']);
         Route::get('/status', [AttendanceSyncController::class, 'status']);
     });
@@ -94,15 +98,17 @@ Route::middleware('auth:sanctum')->group(function () {
     // Fine Tracking & Payments
     Route::prefix('fines')->group(function () {
         Route::get('/', [FineController::class, 'index']);
-        Route::post('/{attendance}/pay', [FineController::class, 'payFine']);
-        Route::post('/{attendance}/waive', [FineController::class, 'waiveFine']);
-        Route::post('/batch-pay', [FineController::class, 'payBatch']);
-        Route::post('/batch-waive', [FineController::class, 'waiveBatch']);
+        Route::middleware('role:admin,event_staff')->group(function () {
+            Route::post('/{attendance}/pay', [FineController::class, 'payFine']);
+            Route::post('/{attendance}/waive', [FineController::class, 'waiveFine']);
+            Route::post('/batch-pay', [FineController::class, 'payBatch']);
+            Route::post('/batch-waive', [FineController::class, 'waiveBatch']);
+        });
     });
     Route::get('/students/{student}/fines', [FineController::class, 'getStudentFines']);
 
     // Analytics Reports & CSV Data Exports
-    Route::prefix('reports')->group(function () {
+    Route::prefix('reports')->middleware('role:admin,event_staff')->group(function () {
         Route::get('/attendance', [ReportController::class, 'attendanceReport']);
         Route::get('/summary', [ReportController::class, 'summaryReport']);
         Route::get('/fines', [ReportController::class, 'fineReport']);

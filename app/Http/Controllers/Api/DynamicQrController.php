@@ -30,6 +30,10 @@ class DynamicQrController extends Controller
         $event = Event::with('staff')->findOrFail($eventId);
 
         // Security authorization check: Admin, Event Creator, or Assigned Event Staff
+        if (!in_array($user->role, ['admin', 'event_staff'])) {
+            return $this->errorResponse('Only administrators and event staff can generate QR codes.', [], 403);
+        }
+
         if ($user->role === 'event_staff' && $event->staff()->exists() && !$event->staff->pluck('id')->contains($user->id) && $event->created_by !== $user->id) {
             return $this->errorResponse('You are not authorized to generate QR codes for this event.', [], 403);
         }

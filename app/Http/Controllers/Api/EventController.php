@@ -381,6 +381,10 @@ class EventController extends Controller
         $user = $request->user();
         $event = Event::findOrFail($id);
 
+        if (!in_array($user->role, ['admin', 'event_staff'])) {
+            return $this->errorResponse('Forbidden. You do not have permission to activate this event.', [], 403);
+        }
+
         if ($user->role === 'event_staff' && $event->staff()->exists() && !$event->staff()->where('user_id', $user->id)->exists() && $event->created_by !== $user->id) {
             return $this->errorResponse('You are not authorized to activate this event.', [], 403);
         }
@@ -406,6 +410,10 @@ class EventController extends Controller
     {
         $user = $request->user();
         $event = Event::findOrFail($id);
+
+        if (!in_array($user->role, ['admin', 'event_staff'])) {
+            return $this->errorResponse('Forbidden. You do not have permission to complete this event.', [], 403);
+        }
 
         if ($user->role === 'event_staff' && $event->staff()->exists() && !$event->staff()->where('user_id', $user->id)->exists() && $event->created_by !== $user->id) {
             return $this->errorResponse('You are not authorized to complete this event.', [], 403);
@@ -475,6 +483,10 @@ class EventController extends Controller
         $user = $request->user();
         $event = Event::findOrFail($id);
 
+        if (!in_array($user->role, ['admin', 'event_staff'])) {
+            return $this->errorResponse('Forbidden. You do not have permission to process absences for this event.', [], 403);
+        }
+
         if ($user->role === 'event_staff' && $event->staff()->exists() && !$event->staff()->where('user_id', $user->id)->exists() && $event->created_by !== $user->id) {
             return $this->errorResponse('You are not authorized to process absences for this event.', [], 403);
         }
@@ -494,6 +506,10 @@ class EventController extends Controller
     {
         $user = $request->user();
         $event = Event::findOrFail($id);
+
+        if (!in_array($user->role, ['admin', 'event_staff'])) {
+            return $this->errorResponse('Forbidden. You do not have permission to control this event.', [], 403);
+        }
 
         if ($user->role === 'event_staff' && $event->staff()->exists() && !$event->staff()->where('user_id', $user->id)->exists() && $event->created_by !== $user->id) {
             return $this->errorResponse('You are not authorized to control this event.', [], 403);

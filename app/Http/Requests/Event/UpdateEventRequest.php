@@ -15,8 +15,9 @@ class UpdateEventRequest extends FormRequest
 
         // Staff can update if assigned to the event
         if ($user->role === 'event_staff') {
-            $eventId = $this->route('event') ? (is_object($this->route('event')) ? $this->route('event')->id : $this->route('event')) : null;
-            return $eventId && $user->assignedEvents()->where('event_id', $eventId)->exists();
+            $routeParam = $this->route('id') ?: $this->route('event');
+            $eventId = is_object($routeParam) ? $routeParam->id : $routeParam;
+            return $eventId && ($user->assignedEvents()->where('event_id', $eventId)->exists() || \App\Models\Event::where('id', $eventId)->where('created_by', $user->id)->exists());
         }
 
         return false;
