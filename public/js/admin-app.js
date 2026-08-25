@@ -734,7 +734,10 @@ const AdminApp = {
         // 2. Upcoming Events
         const upcomingContainer = document.getElementById('right-panel-upcoming-events');
         if (upcomingContainer && this.cachedEvents) {
-            const upcoming = this.cachedEvents.filter(e => e.status === 'upcoming' || e.status === 'active').slice(0, 3);
+            const upcoming = this.cachedEvents
+                .filter(e => e.status === 'upcoming' || e.status === 'active')
+                .sort((a, b) => new Date(a.start_time || a.event_date) - new Date(b.start_time || b.event_date))
+                .slice(0, 3);
             if (upcoming.length > 0) {
                 upcomingContainer.innerHTML = upcoming.map(e => {
                     const d = new Date(e.start_time || e.event_date);
@@ -1136,7 +1139,7 @@ const AdminApp = {
 
         const search = document.getElementById('event-search-input')?.value || '';
         const status = document.getElementById('event-status-filter')?.value || '';
-        const sortByRaw = document.getElementById('event-sort-by')?.value || 'start_time:desc';
+        const sortByRaw = document.getElementById('event-sort-by')?.value || 'start_time:asc';
         let sortBy = 'start_time';
         let sortOrder = 'desc';
         if (sortByRaw.includes(':')) {

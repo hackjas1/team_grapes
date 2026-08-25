@@ -1536,8 +1536,8 @@
                     <div class="col-md-4">
                         <label class="bsis-form-label small text-muted">Sort By</label>
                         <select id="event-sort-by" class="bsis-form-control" onchange="AdminApp.loadEvents()">
-                            <option value="start_time:desc">Start Date (Newest First)</option>
-                            <option value="start_time:asc">Start Date (Oldest First)</option>
+                            <option value="start_time:asc" selected>Start Date (Soonest / Upcoming First)</option>
+                            <option value="start_time:desc">Start Date (Latest / Furthest First)</option>
                             <option value="title:asc">Event Title (A to Z)</option>
                             <option value="title:desc">Event Title (Z to A)</option>
                             <option value="fine_amount:desc">Fine Amount (High to Low)</option>

@@ -35,9 +35,20 @@ class DashboardController extends Controller
                 ->orWhere('created_by', $user->id);
             });
         }
-        $allEvents = $eventsQuery->orderByRaw("CASE WHEN status = 'active' THEN 0 WHEN status = 'upcoming' THEN 1 ELSE 2 END ASC")
-            ->orderBy('start_time', 'desc')
-            ->get(['id', 'title', 'status', 'session_type', 'start_time', 'end_time']);
+        $allEvents = $eventsQuery->orderByRaw("
+            CASE 
+                WHEN status = 'active' THEN 0 
+                WHEN status = 'upcoming' THEN 1 
+                ELSE 2 
+            END ASC
+        ")
+        ->orderByRaw("
+            CASE 
+                WHEN status IN ('active', 'upcoming') THEN start_time 
+            END ASC
+        ")
+        ->orderBy('start_time', 'desc')
+        ->get(['id', 'title', 'status', 'session_type', 'start_time', 'end_time']);
 
         // Determine which event to focus on
         $selectedEvent = null;
