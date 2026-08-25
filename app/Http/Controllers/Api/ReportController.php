@@ -429,7 +429,7 @@ class ReportController extends Controller
                     <tr>
                         <td style='border:none; width:45%; text-align:center;'>
                             _______________________________________<br><br>
-                            <strong>BSIS Attendance Officer / Treasurer</strong><br>
+                            <strong>BSIS Department Treasurer</strong><br>
                             <span style='font-size:8pt; color:#666;'>Signature over Printed Name</span>
                         </td>
                         <td style='border:none; width:10%;'></td>

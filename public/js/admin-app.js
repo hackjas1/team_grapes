@@ -4478,7 +4478,7 @@ const AdminApp = {
                     <div style="width: 240px;">
                         <div style="height: 50px;"></div>
                         <div style="border-bottom: 1.5px solid #0F172A; margin-bottom: 5px;"></div>
-                        <strong style="display: block; color: #0F172A; font-size: 0.76rem;">BSIS Attendance Officer / Treasurer</strong>
+                        <strong style="display: block; color: #0F172A; font-size: 0.76rem;">BSIS Department Treasurer</strong>
                         <span style="color: #64748B; font-size: 0.68rem;">Signature over Printed Name</span>
                     </div>
                     <div style="width: 240px;">
@@ -4939,7 +4939,7 @@ const AdminApp = {
                     <div style="width: 240px;">
                         <div style="height: 50px;"></div>
                         <div style="border-bottom: 1.5px solid #0F172A; margin-bottom: 5px;"></div>
-                        <strong style="display: block; color: #0F172A; font-size: 0.76rem;">BSIS Attendance Officer / Staff In-Charge</strong>
+                        <strong style="display: block; color: #0F172A; font-size: 0.76rem;">BSIS Department Treasurer</strong>
                         <span style="color: #64748B; font-size: 0.68rem;">Signature over Printed Name</span>
                     </div>
                     <div style="width: 240px;">
