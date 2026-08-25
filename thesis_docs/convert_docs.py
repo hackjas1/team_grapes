@@ -277,3 +277,4 @@ if __name__ == '__main__':
     base_dir = r"d:\THESIS CAPSTONE SYSTEM\team_grapes_0.4\thesis_docs"
     convert_md_to_docx(os.path.join(base_dir, "SYSTEM_TECHNICAL_MANUAL.md"), os.path.join(base_dir, "SYSTEM_TECHNICAL_MANUAL.docx"))
     convert_md_to_docx(os.path.join(base_dir, "USER_MANUAL.md"), os.path.join(base_dir, "USER_MANUAL.docx"))
+    convert_md_to_docx(os.path.join(base_dir, "THESIS_PROPOSAL_CHAPTERS_1_2_3.md"), os.path.join(base_dir, "THESIS_PROPOSAL_CHAPTERS_1_2_3.docx"))
