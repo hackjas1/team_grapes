@@ -64,42 +64,45 @@ class EventController extends Controller
 
         // Sorting options
         $sortBy = $request->query('sort_by');
-        $sortOrder = $request->query('sort_order');
+        $sortOrder = $request->query('sort_order', 'asc');
         if ($sortBy && str_contains($sortBy, ':')) {
             [$sortBy, $sortOrder] = explode(':', $sortBy, 2);
         }
+        $sortOrder = strtolower($sortOrder) === 'desc' ? 'desc' : 'asc';
 
-        $allowedSorts = ['start_time', 'end_time', 'created_at', 'title', 'fine_amount', 'status'];
+        // When viewing All Statuses, ALWAYS group by status priority so completed events stay at the lowest side:
+        // 1. ACTIVE (happening now)
+        // 2. UPCOMING (scheduled future events)
+        // 3. COMPLETED (finished events placed at the lowest side)
+        // 4. CANCELLED / OTHER
+        if (!$status) {
+            $query->orderByRaw("
+                CASE 
+                    WHEN status = 'active' THEN 1 
+                    WHEN status = 'upcoming' THEN 2 
+                    WHEN status = 'completed' THEN 3 
+                    ELSE 4 
+                END ASC
+            ");
+        }
 
-        if ($sortBy && in_array($sortBy, $allowedSorts) && $sortOrder) {
-            $sortOrder = strtolower($sortOrder) === 'desc' ? 'desc' : 'asc';
-            $query->orderBy($sortBy, $sortOrder);
-        } else {
-            // Smart chronological ordering:
-            // Upcoming & Active: soonest event at top (e.g. Aug 26 before Aug 29)
-            // Completed / Cancelled: newest past event at top
-            if ($status === 'upcoming' || $status === 'active') {
-                $query->orderBy('start_time', 'asc');
-            } elseif ($status === 'completed' || $status === 'cancelled') {
-                $query->orderBy('start_time', 'desc');
-            } else {
-                // When viewing All Statuses:
-                // Active sessions first (soonest first), Upcoming second (soonest first), Completed last (newest first)
+        if (!$sortBy || $sortBy === 'start_time') {
+            if ($sortOrder === 'asc') {
+                // Upcoming & Active: nearest/soonest date first (Aug 26 before Aug 29)
+                // Completed: at bottom, sorted with most recently completed first
                 $query->orderByRaw("
-                    CASE 
-                        WHEN status = 'active' THEN 1 
-                        WHEN status = 'upcoming' THEN 2 
-                        WHEN status = 'completed' THEN 3 
-                        ELSE 4 
-                    END ASC
-                ")
-                ->orderByRaw("
                     CASE 
                         WHEN status IN ('active', 'upcoming') THEN start_time 
                     END ASC
                 ")
                 ->orderBy('start_time', 'desc');
+            } else {
+                $query->orderBy('start_time', 'desc');
             }
+        } elseif (in_array($sortBy, ['title', 'fine_amount', 'created_at', 'end_time', 'status'])) {
+            $query->orderBy($sortBy, $sortOrder);
+        } else {
+            $query->orderBy('start_time', 'asc');
         }
 
         $events = $query->paginate($request->query('per_page', 50));
