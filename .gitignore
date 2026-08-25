@@ -28,6 +28,7 @@ Thumbs.db
 *.exe
 *.zip
 *.docx
+!thesis_docs/*.docx
 /public/downloads/*.apk
 /tools/
 /scratch/
