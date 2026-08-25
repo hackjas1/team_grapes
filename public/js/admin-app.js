@@ -4422,7 +4422,7 @@ const AdminApp = {
                     <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: right; font-weight: 700; color: #16A34A; white-space: nowrap; font-size: 0.74rem;">₱${s.total_paid.toFixed(2)}</td>
                     <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: right; font-weight: 700; color: ${s.balance_due > 0 ? '#DC2626' : '#16A34A'}; white-space: nowrap; font-size: 0.74rem;">₱${s.balance_due.toFixed(2)}</td>
                     <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: center; font-weight: 800; color: ${statusColor}; white-space: nowrap; font-size: 0.74rem;">${statusLabel}</td>
-                    <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: center; color: #94A3B8; font-size: 0.72rem; white-space: nowrap;">_________________</td>
+                    <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: center; font-size: 0.74rem;"></td>
                 </tr>
             `;
         }).join('');
@@ -4883,7 +4883,7 @@ const AdminApp = {
                     <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: right; font-weight: 700; color: #16A34A; white-space: nowrap; font-size: 0.74rem;">₱${s.total_paid.toFixed(2)}</td>
                     <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: right; font-weight: 700; color: ${s.balance_due > 0 ? '#DC2626' : '#16A34A'}; white-space: nowrap; font-size: 0.74rem;">₱${s.balance_due.toFixed(2)}</td>
                     <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: center; font-weight: 800; color: ${statusColor}; white-space: nowrap; font-size: 0.74rem;">${statusLabel}</td>
-                    <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: center; color: #94A3B8; font-size: 0.72rem; white-space: nowrap;">_________________</td>
+                    <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: center; font-size: 0.74rem;"></td>
                 </tr>
             `;
         }).join('');

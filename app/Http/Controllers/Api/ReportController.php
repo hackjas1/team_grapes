@@ -360,7 +360,7 @@ class ReportController extends Controller
                         <td style='text-align:right; padding:6px; border:1px solid #c4d1db; color:#16A34A; font-weight:bold; white-space:nowrap;'>PHP " . number_format($paid, 2) . "</td>
                         <td style='text-align:right; padding:6px; border:1px solid #c4d1db; color:#DC2626; font-weight:bold; white-space:nowrap;'>PHP " . number_format($balance, 2) . "</td>
                         <td style='text-align:center; padding:6px; border:1px solid #c4d1db; font-weight:bold; color:{$statusColor}; white-space:nowrap;'>{$statusText}</td>
-                        <td style='padding:6px; border:1px solid #c4d1db; text-align:center; color:#999; font-size:8pt; white-space:nowrap;'>_________________</td>
+                        <td style='padding:6px; border:1px solid #c4d1db; text-align:center;'></td>
                     </tr>
                 ";
             }
