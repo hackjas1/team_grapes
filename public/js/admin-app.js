@@ -4329,103 +4329,146 @@ const AdminApp = {
             per_page: 1000
         });
 
-        this.showToast('Preparing printable fine records...');
+        this.showToast('Preparing official student clearance summary for printing...');
         const res = await StorageManager.apiRequest(`/api/fines?${queryParams.toString()}`);
         if (!res.ok || !res.data.success) {
             alert('Failed to retrieve fine records for printing.');
             return;
         }
 
-        const fines = res.data.data.fines.data;
-        const summary = res.data.data.summary;
+        const fines = res.data.data.fines.data || [];
         const printDate = new Date().toLocaleString([], { dateStyle: 'long', timeStyle: 'short', hour12: true });
-
         const filterSummaryText = `Year Level: ${yearLevel || 'All'} | Block: ${sectionBlock || 'All'} | Status: ${finePaid === 'false' ? 'Unpaid Only' : (finePaid === 'true' ? 'Paid Only' : 'All')}`;
 
-        const rowsHtml = fines.map((f, idx) => {
-            const isAbsent = f.status === 'absent';
-            const scanTimeDisplay = isAbsent 
-                ? '<span style="color: #94A3B8; font-style: italic;">— (Absent)</span>' 
-                : (f.scan_time ? new Date(f.scan_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : (f.checkout_time ? new Date(f.checkout_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) + ' (Out)' : '—'));
-            const yrBlk = [f.user?.year_level, f.user?.section_block].filter(Boolean).join(' - ') || 'N/A';
-            const violationText = isAbsent ? 'ABSENT' : 'LATE';
+        // Group fines by student to create a clean, 1-row-per-student clearance masterlist
+        const studentMap = new Map();
+        fines.forEach(f => {
+            const uid = f.user_id || f.user?.id || f.user?.student_number;
+            if (!uid) return;
+
+            if (!studentMap.has(uid)) {
+                studentMap.set(uid, {
+                    student_number: f.user?.student_number || 'N/A',
+                    full_name: f.user?.full_name || 'N/A',
+                    year_level: f.user?.year_level || '',
+                    section_block: f.user?.section_block || '',
+                    total_incurred: 0,
+                    total_paid: 0,
+                    balance_due: 0,
+                    violation_count: 0
+                });
+            }
+
+            const item = studentMap.get(uid);
+            const amt = parseFloat(f.fine_amount || 0);
+            item.total_incurred += amt;
+            item.violation_count++;
+            if (f.fine_paid === true || f.fine_paid == 1) {
+                item.total_paid += amt;
+            }
+        });
+
+        // Compute balances and totals
+        let totalListedStudents = 0;
+        let grandTotalIncurred = 0;
+        let grandTotalPaid = 0;
+        let grandTotalBalance = 0;
+
+        const studentsList = Array.from(studentMap.values()).map(s => {
+            s.balance_due = Math.max(0, s.total_incurred - s.total_paid);
+            grandTotalIncurred += s.total_incurred;
+            grandTotalPaid += s.total_paid;
+            grandTotalBalance += s.balance_due;
+            totalListedStudents++;
+            return s;
+        });
+
+        // Sort students alphabetically by full name
+        studentsList.sort((a, b) => a.full_name.localeCompare(b.full_name));
+
+        const rowsHtml = studentsList.map((s, idx) => {
+            const yrBlk = [s.year_level, s.section_block].filter(Boolean).join(' - ') || 'N/A';
+            const isCleared = s.balance_due <= 0;
+            const statusLabel = isCleared ? 'CLEARED' : 'UNPAID';
+            const statusColor = isCleared ? '#16A34A' : '#DC2626';
 
             return `
                 <tr style="page-break-inside: avoid;">
-                    <td style="padding: 2px 4px; border: 1px solid #CBD5E1; text-align: center;">${idx + 1}</td>
-                    <td style="padding: 2px 4px; border: 1px solid #CBD5E1; font-weight: 700; white-space: nowrap;">${f.user?.student_number || 'N/A'}</td>
-                    <td style="padding: 2px 4px; border: 1px solid #CBD5E1; font-weight: 600; white-space: nowrap;">${f.user?.full_name || 'N/A'}</td>
-                    <td style="padding: 2px 4px; border: 1px solid #CBD5E1; text-align: center; white-space: nowrap;">${yrBlk}</td>
-                    <td style="padding: 2px 4px; border: 1px solid #CBD5E1;">${f.event?.title || 'N/A'}</td>
-                    <td style="padding: 2px 4px; border: 1px solid #CBD5E1; text-align: center; font-weight: 700; color: ${isAbsent ? '#DC2626' : '#D97706'}; white-space: nowrap;">${violationText}</td>
-                    <td style="padding: 2px 4px; border: 1px solid #CBD5E1; text-align: center; white-space: nowrap; font-family: Consolas, monospace; font-size: 0.68rem;">${scanTimeDisplay}</td>
-                    <td style="padding: 2px 4px; border: 1px solid #CBD5E1; text-align: right; font-weight: 700; color: #DC2626; white-space: nowrap;">₱${parseFloat(f.fine_amount).toFixed(2)}</td>
-                    <td style="padding: 2px 4px; border: 1px solid #CBD5E1; text-align: center; font-weight: 700; color: ${f.fine_paid ? '#16A34A' : '#DC2626'}; white-space: nowrap;">${f.fine_paid ? 'PAID' : 'UNPAID'}</td>
+                    <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: center; font-size: 0.74rem;">${idx + 1}</td>
+                    <td style="padding: 4px 6px; border: 1px solid #CBD5E1; font-weight: 700; white-space: nowrap; font-size: 0.74rem;">${s.student_number}</td>
+                    <td style="padding: 4px 6px; border: 1px solid #CBD5E1; font-weight: 600; font-size: 0.74rem;">${s.full_name}</td>
+                    <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: center; white-space: nowrap; font-size: 0.74rem;">${yrBlk}</td>
+                    <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: right; font-weight: 700; white-space: nowrap; font-size: 0.74rem;">₱${s.total_incurred.toFixed(2)}</td>
+                    <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: right; font-weight: 700; color: #16A34A; white-space: nowrap; font-size: 0.74rem;">₱${s.total_paid.toFixed(2)}</td>
+                    <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: right; font-weight: 700; color: ${s.balance_due > 0 ? '#DC2626' : '#16A34A'}; white-space: nowrap; font-size: 0.74rem;">₱${s.balance_due.toFixed(2)}</td>
+                    <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: center; font-weight: 800; color: ${statusColor}; white-space: nowrap; font-size: 0.74rem;">${statusLabel}</td>
+                    <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: center; color: #94A3B8; font-size: 0.72rem; white-space: nowrap;">_________________</td>
                 </tr>
             `;
         }).join('');
 
         const printableContainer = document.getElementById('printable-fines-area');
         printableContainer.innerHTML = `
-            <div style="font-family: 'Inter', Arial, sans-serif; color: #0F172A; padding: 4px; line-height: 1.2;">
-                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #063B5C; padding-bottom: 4px; margin-bottom: 5px;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <img src="/images/bsis-logo.png" style="height: 38px;">
+            <div style="font-family: 'Inter', Arial, sans-serif; color: #0F172A; padding: 4px; line-height: 1.25;">
+                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #063B5C; padding-bottom: 5px; margin-bottom: 8px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <img src="/images/bsis-logo.png" style="height: 44px;">
                         <div>
-                            <h4 style="margin: 0; color: #063B5C; font-weight: 800; font-size: 1.0rem; letter-spacing: -0.2px;">TALIBON POLYTECHNIC COLLEGE</h4>
-                            <h6 style="margin: 1px 0 0 0; color: #0284C7; font-weight: 700; font-size: 0.76rem;">Bachelor of Science in Information Systems (BSIS)</h6>
-                            <span style="font-size: 0.68rem; color: #64748B;">Official Student Event Attendance Fine Report</span>
+                            <h4 style="margin: 0; color: #063B5C; font-weight: 800; font-size: 1.05rem; letter-spacing: -0.2px;">TALIBON POLYTECHNIC COLLEGE</h4>
+                            <h6 style="margin: 1px 0 0 0; color: #0284C7; font-weight: 700; font-size: 0.78rem;">Bachelor of Science in Information Systems (BSIS)</h6>
+                            <span style="font-size: 0.70rem; color: #64748B;">Official Student Clearance & Fine Summary Masterlist</span>
                         </div>
                     </div>
-                    <div style="text-align: right; font-size: 0.68rem; color: #64748B; line-height: 1.25;">
-                        <strong>Date Printed:</strong> ${printDate}<br>
+                    <div style="text-align: right; font-size: 0.70rem; color: #64748B; line-height: 1.3;">
+                        <strong>Date Generated:</strong> ${printDate}<br>
                         <strong>Issued By:</strong> ${user ? user.full_name : 'System BSIS Administrator'}
                     </div>
                 </div>
 
-                <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 4px; padding: 3px 6px; margin-bottom: 5px; font-size: 0.70rem; display: flex; justify-content: space-between; align-items: center;">
+                <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; padding: 6px 10px; margin-bottom: 8px; font-size: 0.72rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
                     <div>
-                        <strong style="color: #063B5C;">Filters:</strong> ${filterSummaryText}
+                        <strong style="color: #063B5C;">Filters:</strong> ${filterSummaryText} &nbsp;|&nbsp; <strong>Total Students:</strong> ${totalListedStudents}
                     </div>
-                    <div>
-                        <strong style="color: #063B5C;">Total Fines:</strong> <span style="font-weight: bold; margin-right: 10px;">₱${summary.total_fines_amount.toFixed(2)}</span>
-                        <strong style="color: #DC2626;">Total Unpaid:</strong> <span style="color: #DC2626; font-weight: bold;">₱${summary.unpaid_fines_amount.toFixed(2)}</span>
+                    <div style="display: flex; gap: 14px; font-weight: 700;">
+                        <span style="color: #063B5C;">Total Incurred: ₱${grandTotalIncurred.toFixed(2)}</span>
+                        <span style="color: #16A34A;">Total Paid: ₱${grandTotalPaid.toFixed(2)}</span>
+                        <span style="color: #DC2626;">Total Outstanding Due: ₱${grandTotalBalance.toFixed(2)}</span>
                     </div>
                 </div>
 
-                <table style="width: 100%; border-collapse: collapse; font-size: 0.70rem; margin-bottom: 6px;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.72rem; margin-bottom: 10px;">
                     <thead>
                         <tr style="background-color: #063B5C; color: #FFFFFF;">
-                            <th style="padding: 2px 4px; border: 1px solid #063B5C; width: 22px; text-align: center;">#</th>
-                            <th style="padding: 2px 4px; border: 1px solid #063B5C; text-align: left; width: 80px;">Student ID</th>
-                            <th style="padding: 2px 4px; border: 1px solid #063B5C; text-align: left;">Student Name</th>
-                            <th style="padding: 2px 4px; border: 1px solid #063B5C; text-align: center; width: 65px;">Year/Block</th>
-                            <th style="padding: 2px 4px; border: 1px solid #063B5C; text-align: left;">Event Title</th>
-                            <th style="padding: 2px 4px; border: 1px solid #063B5C; text-align: center; width: 50px;">Violation</th>
-                            <th style="padding: 2px 4px; border: 1px solid #063B5C; text-align: center; width: 75px;">Scan Time</th>
-                            <th style="padding: 2px 4px; border: 1px solid #063B5C; text-align: right; width: 50px;">Fine</th>
-                            <th style="padding: 2px 4px; border: 1px solid #063B5C; text-align: center; width: 50px;">Status</th>
+                            <th style="padding: 4px 6px; border: 1px solid #063B5C; width: 25px; text-align: center;">#</th>
+                            <th style="padding: 4px 6px; border: 1px solid #063B5C; text-align: left; width: 85px;">Student ID</th>
+                            <th style="padding: 4px 6px; border: 1px solid #063B5C; text-align: left;">Student Full Name</th>
+                            <th style="padding: 4px 6px; border: 1px solid #063B5C; text-align: center; width: 90px;">Year / Block</th>
+                            <th style="padding: 4px 6px; border: 1px solid #063B5C; text-align: right; width: 75px;">Total Fine</th>
+                            <th style="padding: 4px 6px; border: 1px solid #063B5C; text-align: right; width: 75px;">Paid</th>
+                            <th style="padding: 4px 6px; border: 1px solid #063B5C; text-align: right; width: 85px;">Balance Due</th>
+                            <th style="padding: 4px 6px; border: 1px solid #063B5C; text-align: center; width: 75px;">Status</th>
+                            <th style="padding: 4px 6px; border: 1px solid #063B5C; text-align: center; width: 110px;">Signature / Date</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${rowsHtml || '<tr><td colspan="9" style="text-align: center; padding: 10px;">No fine records found.</td></tr>'}
+                        ${rowsHtml || '<tr><td colspan="9" style="text-align: center; padding: 14px; color: #64748B;">No student fine records found matching the active filters.</td></tr>'}
                     </tbody>
                 </table>
 
-                <div style="margin-top: 25px; display: flex; justify-content: space-between; text-align: center; font-size: 0.72rem; color: #1E293B; page-break-inside: avoid;">
-                    <div style="width: 210px;">
+                <div style="margin-top: 30px; display: flex; justify-content: space-between; text-align: center; font-size: 0.74rem; color: #1E293B; page-break-inside: avoid;">
+                    <div style="width: 220px;">
                         <div style="height: 45px;"></div>
                         <div style="border-bottom: 1.5px solid #0F172A; padding-bottom: 2px; margin-bottom: 2px;">
                             <strong>${user ? user.full_name : 'System BSIS Administrator'}</strong>
                         </div>
-                        <span style="color: #64748B; font-size: 0.68rem; font-weight: 500;">BSIS Attendance Officer</span>
+                        <span style="color: #64748B; font-size: 0.68rem; font-weight: 500;">BSIS Attendance Officer / Treasurer</span>
                     </div>
-                    <div style="width: 210px;">
+                    <div style="width: 220px;">
                         <div style="height: 45px;"></div>
                         <div style="border-bottom: 1.5px solid #0F172A; padding-bottom: 2px; margin-bottom: 2px;">
-                            <strong>Program Head</strong>
+                            <strong>Program Head / Dean</strong>
                         </div>
-                        <span style="color: #64748B; font-size: 0.68rem; font-weight: 500;">BSIS Department</span>
+                        <span style="color: #64748B; font-size: 0.68rem; font-weight: 500;">BSIS Department / College</span>
                     </div>
                 </div>
             </div>
@@ -4437,6 +4480,27 @@ const AdminApp = {
             window.location.hash = '#fines';
             this.showView('view-fines');
         }, 100);
+    },
+
+    exportFilteredFinesCsv() {
+        const search = document.getElementById('fine-search-input')?.value || '';
+        const finePaid = document.getElementById('fine-status-filter')?.value || '';
+        const yearLevel = document.getElementById('fine-year-filter')?.value || '';
+        const sectionBlock = document.getElementById('fine-block-filter')?.value || '';
+        const token = StorageManager.getToken();
+
+        const params = new URLSearchParams({
+            type: 'fines',
+            format: 'csv',
+            token,
+            search,
+            fine_paid: finePaid,
+            year_level: yearLevel,
+            section_block: sectionBlock
+        });
+
+        this.showToast('Generating official student fines summary CSV export...');
+        window.location.href = `/api/reports/export?${params.toString()}`;
     },
 
     async payFine(attendanceId) {

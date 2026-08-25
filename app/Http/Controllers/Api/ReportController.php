@@ -306,6 +306,141 @@ class ReportController extends Controller
 
         // WORD DOCX / DOC EXPORT
         if (in_array($format, ['docx', 'doc', 'word'])) {
+            if ($type === 'fines') {
+                $filename = "BSIS_Student_Fines_Clearance_Summary_{$timestamp}.doc";
+                $printDate = date('F d, Y - h:i A');
+
+                $grouped = $records->groupBy('user_id');
+                $totalIncurredAll = 0;
+                $totalPaidAll = 0;
+                $totalUnpaidAll = 0;
+
+                $rowsHtml = '';
+                $num = 0;
+                foreach ($grouped as $userId => $items) {
+                    $u = $items->first()->user;
+                    if (!$u) continue;
+                    $num++;
+
+                    $incurred = (float) $items->sum('fine_amount');
+                    $paid = (float) $items->where('fine_paid', true)->sum('fine_amount');
+                    $balance = max(0, $incurred - $paid);
+
+                    $totalIncurredAll += $incurred;
+                    $totalPaidAll += $paid;
+                    $totalUnpaidAll += $balance;
+
+                    $sNum = htmlspecialchars($u->student_number ?? 'N/A');
+                    $name = htmlspecialchars($u->full_name ?? 'N/A');
+                    $yr = htmlspecialchars($u->year_level ?? 'N/A');
+                    $blk = htmlspecialchars($u->section_block ?? 'N/A');
+
+                    $isCleared = $balance <= 0;
+                    $statusText = $isCleared ? 'CLEARED' : 'UNPAID';
+                    $statusColor = $isCleared ? '#16A34A' : '#DC2626';
+
+                    $rowsHtml .= "
+                        <tr>
+                            <td style='text-align:center; padding:6px; border:1px solid #c4d1db;'>{$num}</td>
+                            <td style='padding:6px; border:1px solid #c4d1db; font-weight:bold;'>{$sNum}</td>
+                            <td style='padding:6px; border:1px solid #c4d1db;'>{$name}</td>
+                            <td style='text-align:center; padding:6px; border:1px solid #c4d1db;'>{$yr}</td>
+                            <td style='text-align:center; padding:6px; border:1px solid #c4d1db;'>{$blk}</td>
+                            <td style='text-align:right; padding:6px; border:1px solid #c4d1db; font-weight:bold;'>PHP " . number_format($incurred, 2) . "</td>
+                            <td style='text-align:right; padding:6px; border:1px solid #c4d1db; color:#16A34A; font-weight:bold;'>PHP " . number_format($paid, 2) . "</td>
+                            <td style='text-align:right; padding:6px; border:1px solid #c4d1db; color:#DC2626; font-weight:bold;'>PHP " . number_format($balance, 2) . "</td>
+                            <td style='text-align:center; padding:6px; border:1px solid #c4d1db; font-weight:bold; color:{$statusColor};'>{$statusText}</td>
+                            <td style='padding:6px; border:1px solid #c4d1db; text-align:center; color:#999; font-size:8pt;'>_________________</td>
+                        </tr>
+                    ";
+                }
+
+                if (empty($rowsHtml)) {
+                    $rowsHtml = "<tr><td colspan='10' style='text-align:center; padding:15px; color:#888;'>No student fine records found matching the active filters.</td></tr>";
+                }
+
+                $docContent = "
+                <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+                <head>
+                    <meta charset='utf-8'>
+                    <title>Official Student Clearance & Fine Summary</title>
+                    <style>
+                        @page { size: 8.5in 11in; margin: 0.5in; mso-page-orientation: portrait; }
+                        body { font-family: 'Calibri', 'Arial', sans-serif; font-size: 10pt; color: #17212B; line-height: 1.25; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                        th { background-color: #063B5C; color: #FFFFFF; font-weight: bold; padding: 6px; border: 1px solid #063B5C; text-align: center; font-size: 9pt; }
+                        td { font-size: 9pt; }
+                    </style>
+                </head>
+                <body>
+                    <table style='border:none; margin-bottom:10px;'>
+                        <tr>
+                            <td style='border:none; width:65px; vertical-align:middle;'><img src='https://tpc-bsis.online/images/bsis-logo.png' width='55' height='55'></td>
+                            <td style='border:none; vertical-align:middle;'>
+                                <div style='font-size:14pt; font-weight:bold; color:#063B5C;'>TALIBON POLYTECHNIC COLLEGE</div>
+                                <div style='font-size:10pt; font-weight:bold; color:#0284C7;'>Bachelor of Science in Information Systems (BSIS)</div>
+                                <div style='font-size:9pt; color:#555;'>Official Student Clearance & Fine Summary Masterlist</div>
+                            </td>
+                            <td style='border:none; text-align:right; font-size:8.5pt; color:#555; vertical-align:middle;'>
+                                <strong>Date Generated:</strong> {$printDate}<br>
+                                <strong>Generated By:</strong> {$user->full_name}
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div style='background-color:#F4F8FA; border:1px solid #D1E3ED; padding:8px 12px; margin-bottom:10px; font-size:9pt;'>
+                        <strong style='color:#063B5C;'>Total Students Listed:</strong> {$num} &nbsp;|&nbsp;
+                        <strong style='color:#063B5C;'>Total Fines Incurred:</strong> PHP " . number_format($totalIncurredAll, 2) . " &nbsp;|&nbsp;
+                        <strong style='color:#16A34A;'>Total Paid:</strong> PHP " . number_format($totalPaidAll, 2) . " &nbsp;|&nbsp;
+                        <strong style='color:#DC2626;'>Total Balance Due:</strong> PHP " . number_format($totalUnpaidAll, 2) . "
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style='width:25px;'>#</th>
+                                <th style='width:85px;'>Student ID</th>
+                                <th>Student Full Name</th>
+                                <th style='width:60px;'>Year</th>
+                                <th style='width:60px;'>Block</th>
+                                <th style='width:75px;'>Total Fine</th>
+                                <th style='width:75px;'>Paid</th>
+                                <th style='width:75px;'>Balance Due</th>
+                                <th style='width:65px;'>Status</th>
+                                <th style='width:105px;'>Signature</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {$rowsHtml}
+                        </tbody>
+                    </table>
+
+                    <br><br>
+                    <table style='border:none; margin-top:20px; font-size:9pt;'>
+                        <tr>
+                            <td style='border:none; width:45%; text-align:center;'>
+                                _______________________________________<br>
+                                <strong>{$user->full_name}</strong><br>
+                                <span style='font-size:8pt; color:#666;'>BSIS Attendance Officer / Treasurer</span>
+                            </td>
+                            <td style='border:none; width:10%;'></td>
+                            <td style='border:none; width:45%; text-align:center;'>
+                                _______________________________________<br>
+                                <strong>Department Head / Dean</strong><br>
+                                <span style='font-size:8pt; color:#666;'>College of Information Systems</span>
+                            </td>
+                        </tr>
+                    </table>
+                </body>
+                </html>
+                ";
+
+                return response($docContent, 200, [
+                    'Content-Type' => 'application/msword; charset=UTF-8',
+                    'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+                ]);
+            }
+            
             $filename = "BSIS_Attendance_Report_{$eventSlug}_{$timestamp}.doc";
             
             $presentCount = $records->where('status', 'present')->count();
@@ -425,97 +560,44 @@ class ReportController extends Controller
             $docContent = "
             <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
             <head>
-                <!--[if gte mso 9]>
-                <xml>
-                <w:WordDocument>
-                <w:View>Print</w:View>
-                <w:Zoom>100</w:Zoom>
-                <w:DoNotOptimizeForBrowser/>
-                </w:WordDocument>
-                </xml>
-                <![endif]-->
                 <meta charset='utf-8'>
                 <title>Official Event Attendance Report</title>
                 <style>
-                    @page {
-                        size: 8.5in 11in;
-                        margin: 0.6in 0.6in 0.6in 0.6in;
-                        mso-page-orientation: portrait;
-                    }
-                    body {
-                        font-family: 'Calibri', 'Arial', sans-serif;
-                        font-size: 10.5pt;
-                        color: #17212B;
-                        line-height: 1.25;
-                    }
-                    table.report-table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        margin-top: 10px;
-                        font-size: 8.5pt;
-                    }
-                    table.report-table th {
-                        background-color: #063B5C;
-                        color: #FFFFFF;
-                        padding: 6px 4px;
-                        border: 1px solid #063B5C;
-                        font-weight: bold;
-                        text-align: center;
-                    }
-                    .header-box {
-                        border-bottom: 2.5pt solid #063B5C;
-                        padding-bottom: 6px;
-                        margin-bottom: 10px;
-                    }
-                    .info-card {
-                        background-color: #F4F8FA;
-                        border: 1pt solid #DCE7ED;
-                        padding: 6px 10px;
-                        margin-bottom: 10px;
-                    }
+                    @page { size: 8.5in 11in; margin: 0.6in; mso-page-orientation: portrait; }
+                    body { font-family: 'Calibri', 'Arial', sans-serif; font-size: 10.5pt; color: #17212B; line-height: 1.25; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                    th { background-color: #063B5C; color: #FFFFFF; font-weight: bold; padding: 6px; border: 1px solid #063B5C; text-align: center; font-size: 8.5pt; }
+                    td { font-size: 8.5pt; }
                 </style>
             </head>
             <body>
-                <div class='header-box'>
-                    <table style='width:100%; border:none;'>
-                        <tr>
-                            <td style='vertical-align:middle;'>
-                                <div style='font-size: 13pt; font-weight: bold; color: #063B5C;'>TALIBON POLYTECHNIC COLLEGE</div>
-                                <div style='font-size: 10.5pt; font-weight: bold; color: #35C4E8;'>Department of Bachelor of Science in Information Systems</div>
-                                <div style='font-size: 8.5pt; color: #6B7A86;'>Official Student Event Attendance & Attendance Verification Sheet</div>
-                            </td>
-                            <td style='text-align:right; vertical-align:middle; font-size: 8.5pt; color: #6B7A86;'>
-                                <strong>Generated:</strong> {$printDate}<br>
-                                <strong>Issued By:</strong> {$user->full_name}
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-
-                <div class='info-card'>
-                    <table style='width:100%; border:none; font-size:9pt;'>
-                        <tr>
-                            <td style='width:50%;'><strong>Event Title:</strong> {$eventTitle}</td>
-                            <td style='width:50%;'><strong>Venue:</strong> {$venueName}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Event Date & Time:</strong> {$eventDate}</td>
-                            <td><strong>Target Participants:</strong> {$audience}</td>
-                        </tr>
-                    </table>
-                </div>
-
-                <table style='width:100%; border:none; margin-bottom:10px; font-size:8.5pt;'>
+                <table style='border:none; margin-bottom:10px;'>
                     <tr>
-                        <td style='background:#EBF5FB; padding:5px 8px; border-left:3pt solid #0d6efd;'><strong>Total Scanned:</strong> {$records->count()}</td>
-                        <td style='background:#EBF5FB; padding:5px 8px; border-left:3pt solid #198754;'><strong>Present (On-Time):</strong> {$presentCount}</td>
-                        <td style='background:#EBF5FB; padding:5px 8px; border-left:3pt solid #fd7e14;'><strong>Late Scans:</strong> {$lateCount}</td>
-                        <td style='background:#EBF5FB; padding:5px 8px; border-left:3pt solid #20c997;'><strong>Manual Overrides:</strong> {$overrideCount}</td>
-                        <td style='background:#EBF5FB; padding:5px 8px; border-left:3pt solid #dc3545;'><strong>Total Fines:</strong> PHP " . number_format($totalFines, 2) . "</td>
+                        <td style='border:none; width:65px; vertical-align:middle;'><img src='https://tpc-bsis.online/images/bsis-logo.png' width='55' height='55'></td>
+                        <td style='border:none; vertical-align:middle;'>
+                            <div style='font-size:14pt; font-weight:bold; color:#063B5C;'>TALIBON POLYTECHNIC COLLEGE</div>
+                            <div style='font-size:10pt; font-weight:bold; color:#0284C7;'>Bachelor of Science in Information Systems (BSIS)</div>
+                            <div style='font-size:9pt; color:#555;'>Official Event Attendance Verification Sheet</div>
+                        </td>
+                        <td style='border:none; text-align:right; font-size:8.5pt; color:#555; vertical-align:middle;'>
+                            <strong>Date Printed:</strong> {$printDate}<br>
+                            <strong>Printed By:</strong> {$user->full_name}
+                        </td>
                     </tr>
                 </table>
 
-                <table class='report-table'>
+                <div style='background-color:#F4F8FA; border:1px solid #D1E3ED; padding:8px 12px; margin-bottom:10px; font-size:9pt;'>
+                    <div style='margin-bottom:3px;'><strong>Event Session:</strong> {$eventTitle} &nbsp;|&nbsp; <strong>Date:</strong> {$eventDate}</div>
+                    <div>
+                        <strong style='color:#063B5C;'>Total Scans:</strong> {$records->count()} &nbsp;|&nbsp;
+                        <strong style='color:#0d6efd;'>Present:</strong> {$presentCount} &nbsp;|&nbsp;
+                        <strong style='color:#fd7e14;'>Late:</strong> {$lateCount} &nbsp;|&nbsp;
+                        <strong style='color:#198754;'>Override:</strong> {$overrideCount} &nbsp;|&nbsp;
+                        <strong style='color:#DC2626;'>Total Fines:</strong> PHP " . number_format($totalFines, 2) . "
+                    </div>
+                </div>
+
+                <table>
                     <thead>
                         {$tableHeadersHtml}
                     </thead>
@@ -525,15 +607,15 @@ class ReportController extends Controller
                 </table>
 
                 <br><br>
-                <table style='width:100%; border:none; margin-top:15px; font-size:9pt;'>
+                <table style='border:none; margin-top:20px; font-size:9pt;'>
                     <tr>
-                        <td style='width:45%; text-align:center;'>
+                        <td style='border:none; width:45%; text-align:center;'>
                             _______________________________________<br>
                             <strong>{$user->full_name}</strong><br>
                             <span style='font-size:8pt; color:#666;'>BSIS Attendance Officer / Staff In-Charge</span>
                         </td>
-                        <td style='width:10%;'></td>
-                        <td style='width:45%; text-align:center;'>
+                        <td style='border:none; width:10%;'></td>
+                        <td style='border:none; width:45%; text-align:center;'>
                             _______________________________________<br>
                             <strong>Department Head / Dean</strong><br>
                             <span style='font-size:8pt; color:#666;'>College of Information Systems</span>
@@ -547,15 +629,69 @@ class ReportController extends Controller
             return response($docContent, 200, [
                 'Content-Type' => 'application/msword; charset=UTF-8',
                 'Content-Disposition' => "attachment; filename=\"{$filename}\"",
-                'Pragma' => 'no-cache',
-                'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
-                'Expires' => '0',
             ]);
         }
 
         // CSV EXPORT
-        $prefix = $type === 'fines' ? 'BSIS_Fines_Report_' : 'BSIS_Attendance_Report_';
-        $filename = "{$prefix}{$eventSlug}_{$timestamp}.csv";
+        if ($type === 'fines') {
+            $filename = "BSIS_Student_Fines_Clearance_Summary_{$timestamp}.csv";
+
+            $headers = [
+                'Content-Type' => 'text/csv; charset=UTF-8',
+                'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+                'Pragma' => 'no-cache',
+                'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+                'Expires' => '0',
+            ];
+
+            $grouped = $records->groupBy('user_id');
+
+            $callback = function () use ($grouped) {
+                $file = fopen('php://output', 'w');
+                fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF)); // UTF-8 BOM
+
+                fputcsv($file, [
+                    'Student ID',
+                    'Student Full Name',
+                    'Year Level',
+                    'Block',
+                    'Institutional Email',
+                    'Total Fines Incurred (PHP)',
+                    'Total Fines Paid (PHP)',
+                    'Outstanding Balance Due (PHP)',
+                    'Clearance Status',
+                ]);
+
+                foreach ($grouped as $userId => $items) {
+                    $u = $items->first()->user;
+                    if (!$u) continue;
+
+                    $incurred = (float) $items->sum('fine_amount');
+                    $paid = (float) $items->where('fine_paid', true)->sum('fine_amount');
+                    $balance = max(0, $incurred - $paid);
+                    $status = $balance <= 0 ? 'CLEARED' : 'UNPAID';
+
+                    fputcsv($file, [
+                        $u->student_number ?? 'N/A',
+                        $u->full_name ?? 'N/A',
+                        $u->year_level ?? 'N/A',
+                        $u->section_block ?? 'N/A',
+                        $u->email ?? 'N/A',
+                        number_format($incurred, 2, '.', ''),
+                        number_format($paid, 2, '.', ''),
+                        number_format($balance, 2, '.', ''),
+                        $status,
+                    ]);
+                }
+
+                fclose($file);
+            };
+
+            return response()->stream($callback, 200, $headers);
+        }
+
+        // CSV Export for Attendance
+        $filename = "BSIS_Attendance_Report_{$eventSlug}_{$timestamp}.csv";
 
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
