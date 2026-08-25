@@ -16,7 +16,7 @@ class QrTokenService
      */
     public function generateToken(Event $event): array
     {
-        $durationSeconds = (int) SystemSetting::get('qr_expiration_seconds', '20');
+        $durationSeconds = (int) SystemSetting::get('qr_expiration_seconds', '60');
         $now = time();
         $expiresAt = $now + $durationSeconds;
         $nonce = Str::random(16);

@@ -17,7 +17,7 @@ class SystemSettingSeeder extends Seeder
             ],
             [
                 'key' => 'qr_expiration_seconds',
-                'value' => '20',
+                'value' => '60',
                 'description' => 'Dynamic QR code token expiration time in seconds',
             ],
             [

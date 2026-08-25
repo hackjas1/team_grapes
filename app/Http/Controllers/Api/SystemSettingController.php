@@ -21,7 +21,7 @@ class SystemSettingController extends Controller
         $settings = SystemSetting::all()->pluck('value', 'key');
         return $this->successResponse([
             'settings' => $settings,
-            'qr_expiration_seconds' => (int) SystemSetting::get('qr_expiration_seconds', '20'),
+            'qr_expiration_seconds' => (int) SystemSetting::get('qr_expiration_seconds', '60'),
             'institutional_email_domain' => SystemSetting::get('institutional_email_domain', 'tpc.edu.ph'),
             'default_allowed_radius_meters' => (int) SystemSetting::get('default_allowed_radius_meters', '50'),
         ], 'System settings retrieved successfully.');
@@ -65,7 +65,7 @@ class SystemSettingController extends Controller
         ]);
 
         return $this->successResponse([
-            'qr_expiration_seconds' => (int) SystemSetting::get('qr_expiration_seconds', '20'),
+            'qr_expiration_seconds' => (int) SystemSetting::get('qr_expiration_seconds', '60'),
             'default_allowed_radius_meters' => (int) SystemSetting::get('default_allowed_radius_meters', '50'),
             'institutional_email_domain' => SystemSetting::get('institutional_email_domain', 'tpc.edu.ph'),
         ], 'System settings updated successfully.');

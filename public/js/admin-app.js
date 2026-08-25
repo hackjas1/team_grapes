@@ -870,11 +870,23 @@ const AdminApp = {
         });
     },
 
+    async openQrSettingsModal() {
+        const input = document.getElementById('setting-qr-interval-input');
+        const res = await StorageManager.apiRequest('/api/settings');
+        if (res.ok && res.data?.data) {
+            const sec = res.data.data.qr_expiration_seconds || 60;
+            if (input) input.value = sec;
+            this.currentQrDurationSeconds = sec;
+        } else {
+            if (input && !input.value) input.value = 60;
+        }
+    },
+
     async handleSaveQrSettings(event) {
         event.preventDefault();
         const seconds = parseInt(document.getElementById('setting-qr-interval-input').value);
         if (isNaN(seconds) || seconds < 5 || seconds > 300) {
-            alert('Please enter a valid QR expiration interval between 5 and 300 seconds.');
+            this.showToast('Please enter a valid QR expiration interval between 5 and 300 seconds.', 'warning');
             return;
         }
 
@@ -886,9 +898,9 @@ const AdminApp = {
         if (res.ok && res.data.success) {
             this.currentQrDurationSeconds = res.data.data.qr_expiration_seconds;
             bootstrap.Modal.getInstance(document.getElementById('modal-qr-settings'))?.hide();
-            this.showToast(`Dynamic QR Code refresh interval updated to ${this.currentQrDurationSeconds} seconds!`);
+            this.showToast(`Dynamic QR Code refresh interval updated to ${this.currentQrDurationSeconds} seconds!`, 'success');
         } else {
-            alert(res.data?.message || 'Failed to update QR interval setting.');
+            this.showToast(res.data?.message || 'Failed to update QR interval setting.', 'danger');
         }
     },
 

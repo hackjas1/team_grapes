@@ -1072,7 +1072,7 @@
                         <i class="bi bi-shield-lock"></i>
                         <span class="flex-grow-1">System Audit Logs</span>
                     </a>
-                    <button type="button" class="profile-popup-item admin-only-nav w-100 text-start" data-admin-only="true" data-bs-toggle="modal" data-bs-target="#modal-qr-settings" onclick="AdminApp.closeProfilePopup()">
+                    <button type="button" class="profile-popup-item admin-only-nav w-100 text-start" data-admin-only="true" data-bs-toggle="modal" data-bs-target="#modal-qr-settings" onclick="AdminApp.closeProfilePopup(); AdminApp.openQrSettingsModal();">
                         <i class="bi bi-clock-history"></i>
                         <span class="flex-grow-1">QR Interval Settings</span>
                     </button>
@@ -3526,10 +3526,10 @@
                         <div class="mb-3">
                             <label class="bsis-form-label">QR Token Expiration Interval (Seconds)</label>
                             <div class="input-group">
-                                <input type="number" min="5" max="300" id="setting-qr-interval-input" class="bsis-form-control" placeholder="20" value="20" required>
+                                <input type="number" min="5" max="300" id="setting-qr-interval-input" class="bsis-form-control" placeholder="60" value="60" required>
                                 <span class="input-group-text bg-light text-muted fw-bold">seconds</span>
                             </div>
-                            <small class="text-muted">Recommended: 10s to 60s (Default: 20 seconds).</small>
+                            <small class="text-muted">Recommended: 60 seconds (Max: 300 seconds).</small>
                         </div>
                     </div>
                     <div class="modal-footer">
