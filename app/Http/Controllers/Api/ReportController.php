@@ -37,11 +37,11 @@ class ReportController extends Controller
         }
 
         if ($eventId = $request->query('event_id')) {
-            $query->where('event_id', $eventId);
+            $query->where('attendances.event_id', $eventId);
         }
 
         if ($studentId = $request->query('student_id')) {
-            $query->where('user_id', $studentId);
+            $query->where('attendances.user_id', $studentId);
         }
 
         if ($search = $request->query('search')) {
@@ -58,7 +58,7 @@ class ReportController extends Controller
         }
 
         if ($status = $request->query('status')) {
-            $query->where('status', $status);
+            $query->where('attendances.status', $status);
         }
 
         if ($yearLevel = $request->query('year_level')) {
@@ -74,11 +74,11 @@ class ReportController extends Controller
         }
 
         if ($startDate = $request->query('start_date')) {
-            $query->whereDate('scan_time', '>=', $startDate);
+            $query->whereDate('attendances.scan_time', '>=', $startDate);
         }
 
         if ($endDate = $request->query('end_date')) {
-            $query->whereDate('scan_time', '<=', $endDate);
+            $query->whereDate('attendances.scan_time', '<=', $endDate);
         }
 
         $perPage = (int) $request->query('per_page', 25);

@@ -2130,7 +2130,7 @@
                         </select>
                     </div>
                     <div class="col-md-6">
-                        <label class="bsis-form-label small text-muted">Section / Block Filter</label>
+                        <label class="bsis-form-label small text-muted">Block Filter</label>
                         <input type="text" id="report-block-filter" class="bsis-form-control" placeholder="e.g. Block 1 ... Block 20" onkeyup="AdminApp.loadReports()">
                     </div>
                 </div>
