@@ -36,6 +36,7 @@ class User extends Authenticatable
 
     protected $appends = [
         'full_name',
+        'formal_name',
     ];
 
     protected function casts(): array
@@ -55,6 +56,27 @@ class User extends Authenticatable
                 $user->uuid = (string) Str::uuid();
             }
         });
+    }
+
+    /**
+     * Get formal name accessor with uppercase LAST NAME, FIRST NAME M.I.
+     * e.g. "LA ROSA, CHRISTIAN PAUL G." or "ABAYABAY, OMAR B."
+     */
+    public function getFormalNameAttribute(): string
+    {
+        $last = strtoupper(trim($this->last_name ?? ''));
+        $first = strtoupper(trim($this->first_name ?? ''));
+        $mi = '';
+        if (!empty($this->middle_name) && trim($this->middle_name) !== '' && strtolower(trim($this->middle_name)) !== 'n/a') {
+            $firstChar = strtoupper(substr(trim($this->middle_name), 0, 1));
+            $mi = ' ' . $firstChar . '.';
+        }
+
+        if (empty($last)) {
+            return $first . $mi;
+        }
+
+        return "{$last}, {$first}{$mi}";
     }
 
     /**

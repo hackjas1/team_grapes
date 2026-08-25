@@ -4312,6 +4312,19 @@ const AdminApp = {
         window.location.href = `/api/reports/export?${params.toString()}`;
     },
 
+    formatFormalName(u) {
+        if (!u) return 'N/A';
+        if (u.formal_name) return u.formal_name;
+        const last = (u.last_name || '').trim().toUpperCase();
+        const first = (u.first_name || '').trim().toUpperCase();
+        let mi = '';
+        if (u.middle_name && u.middle_name.trim() !== '' && u.middle_name.toLowerCase() !== 'n/a') {
+            mi = ' ' + u.middle_name.trim().charAt(0).toUpperCase() + '.';
+        }
+        if (!last) return first ? (first + mi) : (u.full_name || 'N/A').toUpperCase();
+        return `${last}, ${first}${mi}`;
+    },
+
     async printFilteredFines() {
         const user = StorageManager.getUser();
         const search = document.getElementById('fine-search-input')?.value || '';
@@ -4350,6 +4363,9 @@ const AdminApp = {
                 studentMap.set(uid, {
                     student_number: f.user?.student_number || 'N/A',
                     full_name: f.user?.full_name || 'N/A',
+                    formal_name: this.formatFormalName(f.user),
+                    last_name: (f.user?.last_name || '').toUpperCase(),
+                    first_name: (f.user?.first_name || '').toUpperCase(),
                     year_level: f.user?.year_level || '',
                     section_block: f.user?.section_block || '',
                     total_incurred: 0,
@@ -4383,8 +4399,12 @@ const AdminApp = {
             return s;
         });
 
-        // Sort students alphabetically by full name
-        studentsList.sort((a, b) => a.full_name.localeCompare(b.full_name));
+        // Sort students alphabetically by LAST NAME, then FIRST NAME
+        studentsList.sort((a, b) => {
+            const lastComp = a.last_name.localeCompare(b.last_name);
+            if (lastComp !== 0) return lastComp;
+            return a.first_name.localeCompare(b.first_name);
+        });
 
         const rowsHtml = studentsList.map((s, idx) => {
             const yrBlk = [s.year_level, s.section_block].filter(Boolean).join(' - ') || 'N/A';
@@ -4396,7 +4416,7 @@ const AdminApp = {
                 <tr style="page-break-inside: avoid;">
                     <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: center; font-size: 0.74rem;">${idx + 1}</td>
                     <td style="padding: 4px 6px; border: 1px solid #CBD5E1; font-weight: 700; white-space: nowrap; font-size: 0.74rem;">${s.student_number}</td>
-                    <td style="padding: 4px 6px; border: 1px solid #CBD5E1; font-weight: 600; white-space: nowrap; font-size: 0.74rem;">${s.full_name}</td>
+                    <td style="padding: 4px 6px; border: 1px solid #CBD5E1; font-weight: 600; white-space: nowrap; font-size: 0.74rem;">${s.formal_name}</td>
                     <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: center; white-space: nowrap; font-size: 0.74rem;">${yrBlk}</td>
                     <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: right; font-weight: 700; white-space: nowrap; font-size: 0.74rem;">₱${s.total_incurred.toFixed(2)}</td>
                     <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: right; font-weight: 700; color: #16A34A; white-space: nowrap; font-size: 0.74rem;">₱${s.total_paid.toFixed(2)}</td>
@@ -4658,7 +4678,7 @@ const AdminApp = {
                             <tr>
                                 <td><span class="text-muted small">${idx + 1}</span></td>
                                 <td><strong class="text-primary">${r.user?.student_number || 'N/A'}</strong></td>
-                                <td><strong>${r.user?.full_name || 'N/A'}</strong></td>
+                                <td style="white-space: nowrap;"><strong>${this.formatFormalName(r.user)}</strong></td>
                                 <td><span class="bsis-badge bsis-badge-info">${yrBlk}</span></td>
                                 <td>${r.event?.title || 'N/A'}</td>
                                 <td class="font-monospace small text-center">${amIn}</td>
@@ -4676,7 +4696,7 @@ const AdminApp = {
                         <tr>
                             <td><span class="text-muted small">${idx + 1}</span></td>
                             <td><strong class="text-primary">${r.user?.student_number || 'N/A'}</strong></td>
-                            <td><strong>${r.user?.full_name || 'N/A'}</strong></td>
+                            <td style="white-space: nowrap;"><strong>${this.formatFormalName(r.user)}</strong></td>
                             <td><span class="bsis-badge bsis-badge-info">${yrBlk}</span></td>
                             <td>${r.event?.title || 'N/A'}</td>
                             <td class="font-monospace small text-center">${amIn}</td>
@@ -4778,6 +4798,17 @@ const AdminApp = {
         const records = res.data.data.data || [];
         const printDate = new Date().toLocaleString([], { dateStyle: 'long', timeStyle: 'short', hour12: true });
 
+        // Sort records alphabetically by LAST NAME, then FIRST NAME
+        records.sort((a, b) => {
+            const lastA = (a.user?.last_name || '').toUpperCase();
+            const lastB = (b.user?.last_name || '').toUpperCase();
+            const lastComp = lastA.localeCompare(lastB);
+            if (lastComp !== 0) return lastComp;
+            const firstA = (a.user?.first_name || '').toUpperCase();
+            const firstB = (b.user?.first_name || '').toUpperCase();
+            return firstA.localeCompare(firstB);
+        });
+
         const eventSelect = document.getElementById('report-event-filter');
         const selectedEventTitle = eventSelect && eventSelect.selectedIndex >= 0 ? eventSelect.options[eventSelect.selectedIndex].text : 'All Events';
 
@@ -4811,12 +4842,14 @@ const AdminApp = {
                 finePrintHtml = '<span style="color: #64748B;">—</span>';
             }
 
+            const formalName = this.formatFormalName(r.user);
+
             if (isAnyWholeDay) {
                 return `
                     <tr style="page-break-inside: avoid;">
                         <td style="padding: 2px 4px; border: 1px solid #CBD5E1; text-align: center;">${idx + 1}</td>
                         <td style="padding: 2px 4px; border: 1px solid #CBD5E1; font-weight: 700; white-space: nowrap;">${r.user?.student_number || 'N/A'}</td>
-                        <td style="padding: 2px 4px; border: 1px solid #CBD5E1; font-weight: 600;">${r.user?.full_name || 'N/A'}</td>
+                        <td style="padding: 2px 4px; border: 1px solid #CBD5E1; font-weight: 600; white-space: nowrap;">${formalName}</td>
                         <td style="padding: 2px 4px; border: 1px solid #CBD5E1; text-align: center; white-space: nowrap;">${yrBlk}</td>
                         <td style="padding: 2px 4px; border: 1px solid #CBD5E1;">${r.event?.title || 'N/A'}</td>
                         <td style="padding: 2px 4px; border: 1px solid #CBD5E1; text-align: center; white-space: nowrap; font-family: Consolas, monospace; font-size: 0.68rem;">${fmt(r.am_time_in || r.scan_time)}</td>
@@ -4833,7 +4866,7 @@ const AdminApp = {
                 <tr style="page-break-inside: avoid;">
                     <td style="padding: 3px 5px; border: 1px solid #CBD5E1; text-align: center;">${idx + 1}</td>
                     <td style="padding: 3px 5px; border: 1px solid #CBD5E1; font-weight: 700; white-space: nowrap;">${r.user?.student_number || 'N/A'}</td>
-                    <td style="padding: 3px 5px; border: 1px solid #CBD5E1; font-weight: 600;">${r.user?.full_name || 'N/A'}</td>
+                    <td style="padding: 3px 5px; border: 1px solid #CBD5E1; font-weight: 600; white-space: nowrap;">${formalName}</td>
                     <td style="padding: 3px 5px; border: 1px solid #CBD5E1; text-align: center; white-space: nowrap;">${yrBlk}</td>
                     <td style="padding: 3px 5px; border: 1px solid #CBD5E1;">${r.event?.title || 'N/A'}</td>
                     <td style="padding: 3px 5px; border: 1px solid #CBD5E1; text-align: center; white-space: nowrap; font-family: Consolas, monospace;">${fmt(r.scan_time || r.am_time_in)}</td>
@@ -4887,8 +4920,7 @@ const AdminApp = {
                         </div>
                     </div>
                     <div style="text-align: right; font-size: 0.70rem; color: #64748B; line-height: 1.3;">
-                        <strong>Date Printed:</strong> ${printDate}<br>
-                        <strong>Issued By:</strong> ${user ? user.full_name : 'System Administrator'}
+                        <strong>Date Printed:</strong> ${printDate}
                     </div>
                 </div>
 

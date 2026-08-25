@@ -82,7 +82,11 @@ class ReportController extends Controller
         }
 
         $perPage = (int) $request->query('per_page', 25);
-        $records = $query->orderBy('scan_time', 'desc')->paginate($perPage);
+        $records = $query->join('users', 'attendances.user_id', '=', 'users.id')
+            ->select('attendances.*')
+            ->orderBy('users.last_name', 'asc')
+            ->orderBy('users.first_name', 'asc')
+            ->paginate($perPage);
 
         return $this->successResponse($records, 'Attendance report retrieved successfully.');
     }
@@ -284,7 +288,11 @@ class ReportController extends Controller
             });
         }
 
-        $records = $query->orderBy('scan_time', 'desc')->get();
+        $records = $query->get()->sortBy(function ($r) {
+            $last = strtoupper(trim($r->user->last_name ?? ''));
+            $first = strtoupper(trim($r->user->first_name ?? ''));
+            return $last . ' ' . $first;
+        })->values();
 
         $eventSlug = $selectedEvent ? \Illuminate\Support\Str::slug($selectedEvent->title) : 'all_events';
         $timestamp = date('Y_m_d_His');
@@ -310,7 +318,12 @@ class ReportController extends Controller
                 $filename = "BSIS_Student_Fines_Clearance_Summary_{$timestamp}.doc";
                 $printDate = date('F d, Y - h:i A');
 
-                $grouped = $records->groupBy('user_id');
+                $grouped = $records->groupBy('user_id')->sortBy(function ($items) {
+                    $u = $items->first()->user;
+                    $last = strtoupper(trim($u->last_name ?? ''));
+                    $first = strtoupper(trim($u->first_name ?? ''));
+                    return $last . ' ' . $first;
+                });
                 $totalIncurredAll = 0;
                 $totalPaidAll = 0;
                 $totalUnpaidAll = 0;
@@ -331,7 +344,7 @@ class ReportController extends Controller
                     $totalUnpaidAll += $balance;
 
                     $sNum = htmlspecialchars($u->student_number ?? 'N/A');
-                    $name = htmlspecialchars($u->full_name ?? 'N/A');
+                    $name = htmlspecialchars($u->formal_name ?? $u->full_name ?? 'N/A');
                     $yr = htmlspecialchars($u->year_level ?? 'N/A');
                     $blk = htmlspecialchars($u->section_block ?? 'N/A');
 
@@ -458,7 +471,7 @@ class ReportController extends Controller
             foreach ($records as $idx => $r) {
                 $num = $idx + 1;
                 $sNum = htmlspecialchars($r->user->student_number ?? 'N/A');
-                $name = htmlspecialchars($r->user->full_name ?? 'N/A');
+                $name = htmlspecialchars($r->user->formal_name ?? $r->user->full_name ?? 'N/A');
                 $yr = htmlspecialchars($r->user->year_level ?? 'N/A');
                 $blk = htmlspecialchars($r->user->section_block ?? 'N/A');
                 $amIn = $r->am_time_in ? $r->am_time_in->format('h:i:s A') : ($r->scan_time ? $r->scan_time->format('h:i:s A') : '—');
@@ -671,7 +684,7 @@ class ReportController extends Controller
 
                     fputcsv($file, [
                         $u->student_number ?? 'N/A',
-                        $u->full_name ?? 'N/A',
+                        $u->formal_name ?? $u->full_name ?? 'N/A',
                         $u->year_level ?? 'N/A',
                         $u->section_block ?? 'N/A',
                         $u->email ?? 'N/A',
@@ -735,7 +748,7 @@ class ReportController extends Controller
 
                 fputcsv($file, [
                     $row->user->student_number ?? 'N/A',
-                    $row->user->full_name ?? 'N/A',
+                    $row->user->formal_name ?? $row->user->full_name ?? 'N/A',
                     $row->user->year_level ?? 'N/A',
                     $row->user->section_block ?? 'N/A',
                     $row->user->email ?? 'N/A',
