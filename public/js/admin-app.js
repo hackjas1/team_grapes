@@ -4799,159 +4799,139 @@ const AdminApp = {
             section_block: sectionBlock
         });
 
-        this.showToast('Generating official printable attendance report...');
+        this.showToast('Generating official student attendance & clearance summary sheet...');
         const res = await StorageManager.apiRequest(`/api/reports/attendance?${queryParams.toString()}`);
         if (!res.ok || !res.data.success) {
-            alert('Failed to retrieve attendance report data.');
+            alert('Failed to retrieve attendance report data for printing.');
             return;
         }
 
         const records = res.data.data.data || [];
         const printDate = new Date().toLocaleString([], { dateStyle: 'long', timeStyle: 'short', hour12: true });
 
-        // Sort records alphabetically by LAST NAME, then FIRST NAME
-        records.sort((a, b) => {
-            const lastA = (a.user?.last_name || '').toUpperCase();
-            const lastB = (b.user?.last_name || '').toUpperCase();
-            const lastComp = lastA.localeCompare(lastB);
-            if (lastComp !== 0) return lastComp;
-            const firstA = (a.user?.first_name || '').toUpperCase();
-            const firstB = (b.user?.first_name || '').toUpperCase();
-            return firstA.localeCompare(firstB);
-        });
-
         const eventSelect = document.getElementById('report-event-filter');
         const selectedEventTitle = eventSelect && eventSelect.selectedIndex >= 0 ? eventSelect.options[eventSelect.selectedIndex].text : 'All Events';
 
-        const totalScanned = records.length;
-        const presentCount = records.filter(r => r.status === 'present').length;
-        const lateCount = records.filter(r => r.status === 'late').length;
-        const overrideCount = records.filter(r => r.status === 'manual_override').length;
-        const totalFines = records.reduce((sum, r) => sum + (r.fine_paid ? 0 : parseFloat(r.fine_amount || 0)), 0);
+        // Group attendance records by student to create a clean, 1-row-per-student summary
+        const studentMap = new Map();
+        records.forEach(r => {
+            const uid = r.user_id || r.user?.id || r.user?.student_number;
+            if (!uid) return;
+
+            if (!studentMap.has(uid)) {
+                studentMap.set(uid, {
+                    student_number: r.user?.student_number || 'N/A',
+                    full_name: r.user?.full_name || 'N/A',
+                    formal_name: this.formatFormalName(r.user),
+                    last_name: (r.user?.last_name || '').toUpperCase(),
+                    first_name: (r.user?.first_name || '').toUpperCase(),
+                    year_level: r.user?.year_level || '',
+                    section_block: r.user?.section_block || '',
+                    total_incurred: 0,
+                    total_paid: 0,
+                    balance_due: 0,
+                    records_count: 0
+                });
+            }
+
+            const item = studentMap.get(uid);
+            const amt = parseFloat(r.fine_amount || 0);
+            item.total_incurred += amt;
+            item.records_count++;
+            if (r.fine_paid === true || r.fine_paid == 1) {
+                item.total_paid += amt;
+            }
+        });
+
+        // Compute balances and totals
+        let totalListedStudents = 0;
+        let grandTotalIncurred = 0;
+        let grandTotalPaid = 0;
+        let grandTotalBalance = 0;
+
+        const studentsList = Array.from(studentMap.values()).map(s => {
+            s.balance_due = Math.max(0, s.total_incurred - s.total_paid);
+            grandTotalIncurred += s.total_incurred;
+            grandTotalPaid += s.total_paid;
+            grandTotalBalance += s.balance_due;
+            totalListedStudents++;
+            return s;
+        });
+
+        // Sort students alphabetically by LAST NAME, then FIRST NAME
+        studentsList.sort((a, b) => {
+            const lastComp = a.last_name.localeCompare(b.last_name);
+            if (lastComp !== 0) return lastComp;
+            return a.first_name.localeCompare(b.first_name);
+        });
 
         const filterSummaryText = `Event: ${selectedEventTitle} | Year Level: ${yearLevel || 'All'} | Block: ${sectionBlock || 'All'} | Status: ${status ? status.toUpperCase() : 'All'}`;
-        const isAnyWholeDay = records.some(r => r.event?.session_type === 'whole_day' || r.am_time_in || r.pm_time_in);
 
-        const rowsHtml = records.map((r, idx) => {
-            const isAbsent = r.status === 'absent';
-            const yrBlk = [r.user?.year_level, r.user?.section_block].filter(Boolean).join(' - ') || 'N/A';
-            const statusLabel = r.status ? r.status.toUpperCase() : 'N/A';
-            const statusColor = r.status === 'present' ? '#16A34A' : (r.status === 'late' ? '#EA580C' : (r.status === 'manual_override' ? '#0284C7' : '#DC2626'));
-            const fmt = (t) => isAbsent ? '<span style="color: #94A3B8; font-style: italic;">—</span>' : (t ? new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : '—');
-
-            const isPaid = r.fine_paid === true || r.fine_paid == 1;
-            const isWaived = isPaid && (parseFloat(r.fine_amount || 0) <= 0 || r.verification_data?.waive_details);
-            
-            let finePrintHtml = '';
-            if (isWaived) {
-                finePrintHtml = '<span style="color: #0284C7; font-weight: 700;">WAIVED</span>';
-            } else if (isPaid) {
-                finePrintHtml = '<span style="color: #16A34A; font-weight: 700;">PAID</span>';
-            } else if (parseFloat(r.fine_amount || 0) > 0) {
-                finePrintHtml = `<span style="color: #DC2626; font-weight: 700;">₱${parseFloat(r.fine_amount).toFixed(2)}</span>`;
-            } else {
-                finePrintHtml = '<span style="color: #64748B;">—</span>';
-            }
-
-            const formalName = this.formatFormalName(r.user);
-
-            if (isAnyWholeDay) {
-                return `
-                    <tr style="page-break-inside: avoid;">
-                        <td style="padding: 2px 4px; border: 1px solid #CBD5E1; text-align: center;">${idx + 1}</td>
-                        <td style="padding: 2px 4px; border: 1px solid #CBD5E1; font-weight: 700; white-space: nowrap;">${r.user?.student_number || 'N/A'}</td>
-                        <td style="padding: 2px 4px; border: 1px solid #CBD5E1; font-weight: 600; white-space: nowrap;">${formalName}</td>
-                        <td style="padding: 2px 4px; border: 1px solid #CBD5E1; text-align: center; white-space: nowrap;">${yrBlk}</td>
-                        <td style="padding: 2px 4px; border: 1px solid #CBD5E1;">${r.event?.title || 'N/A'}</td>
-                        <td style="padding: 2px 4px; border: 1px solid #CBD5E1; text-align: center; white-space: nowrap; font-family: Consolas, monospace; font-size: 0.68rem;">${fmt(r.am_time_in || r.scan_time)}</td>
-                        <td style="padding: 2px 4px; border: 1px solid #CBD5E1; text-align: center; white-space: nowrap; font-family: Consolas, monospace; font-size: 0.68rem;">${fmt(r.am_time_out)}</td>
-                        <td style="padding: 2px 4px; border: 1px solid #CBD5E1; text-align: center; white-space: nowrap; font-family: Consolas, monospace; font-size: 0.68rem;">${fmt(r.pm_time_in)}</td>
-                        <td style="padding: 2px 4px; border: 1px solid #CBD5E1; text-align: center; white-space: nowrap; font-family: Consolas, monospace; font-size: 0.68rem;">${fmt(r.pm_time_out || r.checkout_time)}</td>
-                        <td style="padding: 2px 4px; border: 1px solid #CBD5E1; text-align: center; font-weight: 700; color: ${statusColor}; white-space: nowrap;">${statusLabel}</td>
-                        <td style="padding: 2px 4px; border: 1px solid #CBD5E1; text-align: right; font-weight: 700; white-space: nowrap;">${finePrintHtml}</td>
-                    </tr>
-                `;
-            }
+        const rowsHtml = studentsList.map((s, idx) => {
+            const yrBlk = [s.year_level, s.section_block].filter(Boolean).join(' - ') || 'N/A';
+            const isCleared = s.balance_due <= 0;
+            const statusLabel = isCleared ? 'CLEARED' : 'UNPAID';
+            const statusColor = isCleared ? '#16A34A' : '#DC2626';
 
             return `
                 <tr style="page-break-inside: avoid;">
-                    <td style="padding: 3px 5px; border: 1px solid #CBD5E1; text-align: center;">${idx + 1}</td>
-                    <td style="padding: 3px 5px; border: 1px solid #CBD5E1; font-weight: 700; white-space: nowrap;">${r.user?.student_number || 'N/A'}</td>
-                    <td style="padding: 3px 5px; border: 1px solid #CBD5E1; font-weight: 600; white-space: nowrap;">${formalName}</td>
-                    <td style="padding: 3px 5px; border: 1px solid #CBD5E1; text-align: center; white-space: nowrap;">${yrBlk}</td>
-                    <td style="padding: 3px 5px; border: 1px solid #CBD5E1;">${r.event?.title || 'N/A'}</td>
-                    <td style="padding: 3px 5px; border: 1px solid #CBD5E1; text-align: center; white-space: nowrap; font-family: Consolas, monospace;">${fmt(r.scan_time || r.am_time_in)}</td>
-                    <td style="padding: 3px 5px; border: 1px solid #CBD5E1; text-align: center; white-space: nowrap; font-family: Consolas, monospace;">${fmt(r.checkout_time || r.pm_time_out)}</td>
-                    <td style="padding: 3px 5px; border: 1px solid #CBD5E1; text-align: center; font-weight: 700; color: ${statusColor}; white-space: nowrap;">${statusLabel}</td>
-                    <td style="padding: 3px 5px; border: 1px solid #CBD5E1; text-align: right; font-weight: 700; white-space: nowrap;">${finePrintHtml}</td>
+                    <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: center; font-size: 0.74rem;">${idx + 1}</td>
+                    <td style="padding: 4px 6px; border: 1px solid #CBD5E1; font-weight: 700; white-space: nowrap; font-size: 0.74rem;">${s.student_number}</td>
+                    <td style="padding: 4px 6px; border: 1px solid #CBD5E1; font-weight: 600; white-space: nowrap; font-size: 0.74rem;">${s.formal_name}</td>
+                    <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: center; white-space: nowrap; font-size: 0.74rem;">${yrBlk}</td>
+                    <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: right; font-weight: 700; white-space: nowrap; font-size: 0.74rem;">₱${s.total_incurred.toFixed(2)}</td>
+                    <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: right; font-weight: 700; color: #16A34A; white-space: nowrap; font-size: 0.74rem;">₱${s.total_paid.toFixed(2)}</td>
+                    <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: right; font-weight: 700; color: ${s.balance_due > 0 ? '#DC2626' : '#16A34A'}; white-space: nowrap; font-size: 0.74rem;">₱${s.balance_due.toFixed(2)}</td>
+                    <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: center; font-weight: 800; color: ${statusColor}; white-space: nowrap; font-size: 0.74rem;">${statusLabel}</td>
+                    <td style="padding: 4px 6px; border: 1px solid #CBD5E1; text-align: center; color: #94A3B8; font-size: 0.72rem; white-space: nowrap;">_________________</td>
                 </tr>
             `;
         }).join('');
 
-        const headersHtml = isAnyWholeDay
-            ? `
-                <tr style="background-color: #063B5C; color: #FFFFFF;">
-                    <th style="padding: 2px 4px; border: 1px solid #063B5C; width: 20px; text-align: center;">#</th>
-                    <th style="padding: 2px 4px; border: 1px solid #063B5C; text-align: left; width: 80px;">Student ID</th>
-                    <th style="padding: 2px 4px; border: 1px solid #063B5C; text-align: left;">Student Full Name</th>
-                    <th style="padding: 2px 4px; border: 1px solid #063B5C; text-align: center; width: 60px;">Year/Block</th>
-                    <th style="padding: 2px 4px; border: 1px solid #063B5C; text-align: left;">Event</th>
-                    <th style="padding: 2px 4px; border: 1px solid #063B5C; text-align: center; width: 55px;">AM In</th>
-                    <th style="padding: 2px 4px; border: 1px solid #063B5C; text-align: center; width: 55px;">AM Out</th>
-                    <th style="padding: 2px 4px; border: 1px solid #063B5C; text-align: center; width: 55px;">PM In</th>
-                    <th style="padding: 2px 4px; border: 1px solid #063B5C; text-align: center; width: 55px;">PM Out</th>
-                    <th style="padding: 2px 4px; border: 1px solid #063B5C; text-align: center; width: 55px;">Status</th>
-                    <th style="padding: 2px 4px; border: 1px solid #063B5C; text-align: right; width: 50px;">Fine</th>
-                </tr>
-            `
-            : `
-                <tr style="background-color: #063B5C; color: #FFFFFF;">
-                    <th style="padding: 3px 5px; border: 1px solid #063B5C; width: 25px; text-align: center;">#</th>
-                    <th style="padding: 3px 5px; border: 1px solid #063B5C; text-align: left; width: 85px;">Student ID</th>
-                    <th style="padding: 3px 5px; border: 1px solid #063B5C; text-align: left;">Student Full Name</th>
-                    <th style="padding: 3px 5px; border: 1px solid #063B5C; text-align: center; width: 70px;">Year/Block</th>
-                    <th style="padding: 3px 5px; border: 1px solid #063B5C; text-align: left;">Event Session</th>
-                    <th style="padding: 3px 5px; border: 1px solid #063B5C; text-align: center; width: 75px;">Time-In</th>
-                    <th style="padding: 3px 5px; border: 1px solid #063B5C; text-align: center; width: 75px;">Time-Out</th>
-                    <th style="padding: 3px 5px; border: 1px solid #063B5C; text-align: center; width: 65px;">Status</th>
-                    <th style="padding: 3px 5px; border: 1px solid #063B5C; text-align: right; width: 55px;">Fine</th>
-                </tr>
-            `;
-
         const printableContainer = document.getElementById('printable-fines-area');
         printableContainer.innerHTML = `
-            <div style="font-family: 'Inter', Arial, sans-serif; color: #0F172A; padding: 4px; line-height: 1.2;">
-                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #063B5C; padding-bottom: 5px; margin-bottom: 6px;">
+            <div style="font-family: 'Inter', Arial, sans-serif; color: #0F172A; padding: 4px; line-height: 1.25;">
+                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #063B5C; padding-bottom: 5px; margin-bottom: 8px;">
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <img src="/images/bsis-logo.png" style="height: 42px;">
+                        <img src="/images/bsis-logo.png" style="height: 44px;">
                         <div>
                             <h4 style="margin: 0; color: #063B5C; font-weight: 800; font-size: 1.05rem; letter-spacing: -0.2px;">TALIBON POLYTECHNIC COLLEGE</h4>
                             <h6 style="margin: 1px 0 0 0; color: #0284C7; font-weight: 700; font-size: 0.78rem;">Bachelor of Science in Information Systems (BSIS)</h6>
-                            <span style="font-size: 0.70rem; color: #64748B;">Official Student Event Attendance & Verification Sheet</span>
+                            <span style="font-size: 0.70rem; color: #64748B;">Official Student Attendance & Clearance Summary Sheet</span>
                         </div>
                     </div>
                     <div style="text-align: right; font-size: 0.70rem; color: #64748B; line-height: 1.3;">
-                        <strong>Date Printed:</strong> ${printDate}
+                        <strong>Date Generated:</strong> ${printDate}
                     </div>
                 </div>
 
-                <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 4px; padding: 4px 8px; margin-bottom: 6px; font-size: 0.72rem;">
-                    <div style="margin-bottom: 2px;"><strong>Report Target:</strong> ${filterSummaryText}</div>
-                    <div style="display: flex; gap: 14px; color: #063B5C; font-weight: bold; flex-wrap: wrap;">
-                        <span>Total Roster: ${totalScanned}</span>
-                        <span style="color: #16A34A;">Present: ${presentCount}</span>
-                        <span style="color: #EA580C;">Late: ${lateCount}</span>
-                        <span style="color: #0284C7;">Override: ${overrideCount}</span>
-                        <span style="color: #DC2626;">Total Fines: ₱${totalFines.toFixed(2)}</span>
+                <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; padding: 6px 10px; margin-bottom: 8px; font-size: 0.72rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                    <div>
+                        <strong style="color: #063B5C;">Filters:</strong> ${filterSummaryText} &nbsp;|&nbsp; <strong>Total Students:</strong> ${totalListedStudents}
+                    </div>
+                    <div style="display: flex; gap: 14px; font-weight: 700;">
+                        <span style="color: #063B5C;">Total Incurred: ₱${grandTotalIncurred.toFixed(2)}</span>
+                        <span style="color: #16A34A;">Total Paid: ₱${grandTotalPaid.toFixed(2)}</span>
+                        <span style="color: #DC2626;">Total Outstanding Due: ₱${grandTotalBalance.toFixed(2)}</span>
                     </div>
                 </div>
 
-                <table style="width: 100%; border-collapse: collapse; font-size: 0.70rem; margin-bottom: 8px;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.72rem; margin-bottom: 10px;">
                     <thead>
-                        ${headersHtml}
+                        <tr style="background-color: #063B5C; color: #FFFFFF;">
+                            <th style="padding: 4px 6px; border: 1px solid #063B5C; width: 25px; text-align: center;">#</th>
+                            <th style="padding: 4px 6px; border: 1px solid #063B5C; text-align: left; width: 85px;">Student ID</th>
+                            <th style="padding: 4px 6px; border: 1px solid #063B5C; text-align: left;">Student Full Name</th>
+                            <th style="padding: 4px 6px; border: 1px solid #063B5C; text-align: center; width: 90px;">Year / Block</th>
+                            <th style="padding: 4px 6px; border: 1px solid #063B5C; text-align: right; width: 75px;">Total Fine</th>
+                            <th style="padding: 4px 6px; border: 1px solid #063B5C; text-align: right; width: 75px;">Paid</th>
+                            <th style="padding: 4px 6px; border: 1px solid #063B5C; text-align: right; width: 85px;">Balance Due</th>
+                            <th style="padding: 4px 6px; border: 1px solid #063B5C; text-align: center; width: 75px;">Status</th>
+                            <th style="padding: 4px 6px; border: 1px solid #063B5C; text-align: center; width: 110px;">Signature / Date</th>
+                        </tr>
                     </thead>
                     <tbody>
-                        ${rowsHtml || '<tr><td colspan="12" style="text-align: center; padding: 12px;">No attendance records found.</td></tr>'}
+                        ${rowsHtml || '<tr><td colspan="9" style="text-align: center; padding: 14px; color: #64748B;">No student attendance records found matching the active filters.</td></tr>'}
                     </tbody>
                 </table>
 

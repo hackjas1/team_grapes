@@ -310,272 +310,76 @@ class ReportController extends Controller
 
         // WORD DOCX / DOC EXPORT
         if (in_array($format, ['docx', 'doc', 'word'])) {
-            if ($type === 'fines') {
-                $filename = "BSIS_Student_Fines_Clearance_Summary_{$timestamp}.doc";
-                $printDate = date('F d, Y - h:i A');
-
-                $grouped = $records->groupBy('user_id')->sortBy(function ($items) {
-                    $u = $items->first()->user;
-                    $last = strtoupper(trim($u->last_name ?? ''));
-                    $first = strtoupper(trim($u->first_name ?? ''));
-                    return $last . ' ' . $first;
-                });
-                $totalIncurredAll = 0;
-                $totalPaidAll = 0;
-                $totalUnpaidAll = 0;
-
-                $rowsHtml = '';
-                $num = 0;
-                foreach ($grouped as $userId => $items) {
-                    $u = $items->first()->user;
-                    if (!$u) continue;
-                    $num++;
-
-                    $incurred = (float) $items->sum('fine_amount');
-                    $paid = (float) $items->where('fine_paid', true)->sum('fine_amount');
-                    $balance = max(0, $incurred - $paid);
-
-                    $totalIncurredAll += $incurred;
-                    $totalPaidAll += $paid;
-                    $totalUnpaidAll += $balance;
-
-                    $sNum = htmlspecialchars($u->student_number ?? 'N/A');
-                    $name = htmlspecialchars($u->formal_name ?? $u->full_name ?? 'N/A');
-                    $yr = htmlspecialchars($u->year_level ?? 'N/A');
-                    $blk = htmlspecialchars($u->section_block ?? 'N/A');
-
-                    $isCleared = $balance <= 0;
-                    $statusText = $isCleared ? 'CLEARED' : 'UNPAID';
-                    $statusColor = $isCleared ? '#16A34A' : '#DC2626';
-
-                    $rowsHtml .= "
-                        <tr>
-                            <td style='text-align:center; padding:6px; border:1px solid #c4d1db;'>{$num}</td>
-                            <td style='padding:6px; border:1px solid #c4d1db; font-weight:bold; white-space:nowrap;'>{$sNum}</td>
-                            <td style='padding:6px; border:1px solid #c4d1db; white-space:nowrap;'>{$name}</td>
-                            <td style='text-align:center; padding:6px; border:1px solid #c4d1db; white-space:nowrap;'>{$yr}</td>
-                            <td style='text-align:center; padding:6px; border:1px solid #c4d1db; white-space:nowrap;'>{$blk}</td>
-                            <td style='text-align:right; padding:6px; border:1px solid #c4d1db; font-weight:bold; white-space:nowrap;'>PHP " . number_format($incurred, 2) . "</td>
-                            <td style='text-align:right; padding:6px; border:1px solid #c4d1db; color:#16A34A; font-weight:bold; white-space:nowrap;'>PHP " . number_format($paid, 2) . "</td>
-                            <td style='text-align:right; padding:6px; border:1px solid #c4d1db; color:#DC2626; font-weight:bold; white-space:nowrap;'>PHP " . number_format($balance, 2) . "</td>
-                            <td style='text-align:center; padding:6px; border:1px solid #c4d1db; font-weight:bold; color:{$statusColor}; white-space:nowrap;'>{$statusText}</td>
-                            <td style='padding:6px; border:1px solid #c4d1db; text-align:center; color:#999; font-size:8pt; white-space:nowrap;'>_________________</td>
-                        </tr>
-                    ";
-                }
-
-                if (empty($rowsHtml)) {
-                    $rowsHtml = "<tr><td colspan='10' style='text-align:center; padding:15px; color:#888;'>No student fine records found matching the active filters.</td></tr>";
-                }
-
-                $docContent = "
-                <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-                <head>
-                    <meta charset='utf-8'>
-                    <title>Official Student Clearance & Fine Summary</title>
-                    <style>
-                        @page { size: 8.5in 11in; margin: 0.5in; mso-page-orientation: portrait; }
-                        body { font-family: 'Calibri', 'Arial', sans-serif; font-size: 10pt; color: #17212B; line-height: 1.25; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-                        th { background-color: #063B5C; color: #FFFFFF; font-weight: bold; padding: 6px; border: 1px solid #063B5C; text-align: center; font-size: 9pt; }
-                        td { font-size: 9pt; }
-                    </style>
-                </head>
-                <body>
-                    <table style='border:none; margin-bottom:10px;'>
-                        <tr>
-                            <td style='border:none; width:65px; vertical-align:middle;'><img src='https://tpc-bsis.online/images/bsis-logo.png' width='55' height='55'></td>
-                            <td style='border:none; vertical-align:middle;'>
-                                <div style='font-size:14pt; font-weight:bold; color:#063B5C;'>TALIBON POLYTECHNIC COLLEGE</div>
-                                <div style='font-size:10pt; font-weight:bold; color:#0284C7;'>Bachelor of Science in Information Systems (BSIS)</div>
-                                <div style='font-size:9pt; color:#555;'>Official Student Clearance & Fine Summary Masterlist</div>
-                            </td>
-                            <td style='border:none; text-align:right; font-size:8.5pt; color:#555; vertical-align:middle;'>
-                                <strong>Date Generated:</strong> {$printDate}
-                            </td>
-                        </tr>
-                    </table>
-
-                    <div style='background-color:#F4F8FA; border:1px solid #D1E3ED; padding:8px 12px; margin-bottom:10px; font-size:9pt;'>
-                        <strong style='color:#063B5C;'>Total Students Listed:</strong> {$num} &nbsp;|&nbsp;
-                        <strong style='color:#063B5C;'>Total Fines Incurred:</strong> PHP " . number_format($totalIncurredAll, 2) . " &nbsp;|&nbsp;
-                        <strong style='color:#16A34A;'>Total Paid:</strong> PHP " . number_format($totalPaidAll, 2) . " &nbsp;|&nbsp;
-                        <strong style='color:#DC2626;'>Total Balance Due:</strong> PHP " . number_format($totalUnpaidAll, 2) . "
-                    </div>
-
-                    <table>
-                        <thead>
-                            <tr>
-                                <th style='width:25px;'>#</th>
-                                <th style='width:85px;'>Student ID</th>
-                                <th>Student Full Name</th>
-                                <th style='width:60px;'>Year</th>
-                                <th style='width:60px;'>Block</th>
-                                <th style='width:75px;'>Total Fine</th>
-                                <th style='width:75px;'>Paid</th>
-                                <th style='width:75px;'>Balance Due</th>
-                                <th style='width:65px;'>Status</th>
-                                <th style='width:105px;'>Signature</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {$rowsHtml}
-                        </tbody>
-                    </table>
-
-                    <br><br>
-                    <table style='border:none; margin-top:25px; font-size:9pt;'>
-                        <tr>
-                            <td style='border:none; width:45%; text-align:center;'>
-                                _______________________________________<br><br>
-                                <strong>BSIS Attendance Officer / Treasurer</strong><br>
-                                <span style='font-size:8pt; color:#666;'>Signature over Printed Name</span>
-                            </td>
-                            <td style='border:none; width:10%;'></td>
-                            <td style='border:none; width:45%; text-align:center;'>
-                                _______________________________________<br><br>
-                                <strong>BSIS Department Head</strong><br>
-                                <span style='font-size:8pt; color:#666;'>Signature over Printed Name</span>
-                            </td>
-                        </tr>
-                    </table>
-                </body>
-                </html>
-                ";
-
-                return response($docContent, 200, [
-                    'Content-Type' => 'application/msword; charset=UTF-8',
-                    'Content-Disposition' => "attachment; filename=\"{$filename}\"",
-                ]);
-            }
-            
-            $filename = "BSIS_Attendance_Report_{$eventSlug}_{$timestamp}.doc";
-            
-            $presentCount = $records->where('status', 'present')->count();
-            $lateCount = $records->where('status', 'late')->count();
-            $overrideCount = $records->where('status', 'manual_override')->count();
-            $totalFines = (float) $records->sum('fine_amount');
+            $filename = $type === 'fines' 
+                ? "BSIS_Student_Fines_Clearance_Summary_{$timestamp}.doc" 
+                : "BSIS_Student_Attendance_Clearance_Summary_{$eventSlug}_{$timestamp}.doc";
             $printDate = date('F d, Y - h:i A');
 
-            $eventTitle = $selectedEvent ? htmlspecialchars($selectedEvent->title) : 'All Event Sessions';
-            $venueName = $selectedEvent ? htmlspecialchars($selectedEvent->venue_name) : 'All Venues';
-            $eventDate = $selectedEvent && $selectedEvent->start_time ? $selectedEvent->start_time->format('F d, Y (h:i A)') : 'Various Dates';
-            $audience = $selectedEvent ? $selectedEvent->getTargetAudienceLabel() : 'All Students';
+            $grouped = $records->groupBy('user_id')->sortBy(function ($items) {
+                $u = $items->first()->user;
+                $last = strtoupper(trim($u->last_name ?? ''));
+                $first = strtoupper(trim($u->first_name ?? ''));
+                return $last . ' ' . $first;
+            });
+            $totalIncurredAll = 0;
+            $totalPaidAll = 0;
+            $totalUnpaidAll = 0;
 
-            $isWholeDayEvent = $selectedEvent && $selectedEvent->session_type === 'whole_day';
             $rowsHtml = '';
-            foreach ($records as $idx => $r) {
-                $num = $idx + 1;
-                $sNum = htmlspecialchars($r->user->student_number ?? 'N/A');
-                $name = htmlspecialchars($r->user->formal_name ?? $r->user->full_name ?? 'N/A');
-                $yr = htmlspecialchars($r->user->year_level ?? 'N/A');
-                $blk = htmlspecialchars($r->user->section_block ?? 'N/A');
-                $amIn = $r->am_time_in ? $r->am_time_in->format('h:i:s A') : ($r->scan_time ? $r->scan_time->format('h:i:s A') : '—');
-                $amOut = $r->am_time_out ? $r->am_time_out->format('h:i:s A') : '—';
-                $pmIn = $r->pm_time_in ? $r->pm_time_in->format('h:i:s A') : '—';
-                $pmOut = $r->pm_time_out ? $r->pm_time_out->format('h:i:s A') : ($r->checkout_time ? $r->checkout_time->format('h:i:s A') : '—');
+            $num = 0;
+            foreach ($grouped as $userId => $items) {
+                $u = $items->first()->user;
+                if (!$u) continue;
+                $num++;
 
-                $st = strtoupper($r->status);
-                $stColor = $r->status === 'present' ? '#0d6efd' : ($r->status === 'late' ? '#fd7e14' : '#198754');
-                $dist = $r->distance_meters !== null ? $r->distance_meters . 'm' : 'N/A';
-                
-                $isPaid = (bool) $r->fine_paid;
-                $isWaived = $isPaid && ((float) $r->fine_amount <= 0 || isset($r->verification_data['waive_details']));
-                if ($isWaived) {
-                    $fine = "<span style='color:#0284C7; font-weight:bold;'>WAIVED</span>";
-                } elseif ($isPaid) {
-                    $fine = "<span style='color:#16A34A; font-weight:bold;'>PAID</span>";
-                } elseif ((float) $r->fine_amount > 0) {
-                    $fine = "<span style='color:#DC2626; font-weight:bold;'>PHP " . number_format($r->fine_amount, 2) . "</span>";
-                } else {
-                    $fine = "<span style='color:#888;'>—</span>";
-                }
+                $incurred = (float) $items->sum('fine_amount');
+                $paid = (float) $items->where('fine_paid', true)->sum('fine_amount');
+                $balance = max(0, $incurred - $paid);
 
-                if ($isWholeDayEvent) {
-                    $rowsHtml .= "
-                        <tr>
-                            <td style='text-align:center; padding:5px; border:1px solid #c4d1db;'>{$num}</td>
-                            <td style='padding:5px; border:1px solid #c4d1db; font-weight:bold; white-space:nowrap;'>{$sNum}</td>
-                            <td style='padding:5px; border:1px solid #c4d1db; white-space:nowrap;'>{$name}</td>
-                            <td style='text-align:center; padding:5px; border:1px solid #c4d1db; white-space:nowrap;'>{$yr}</td>
-                            <td style='text-align:center; padding:5px; border:1px solid #c4d1db; white-space:nowrap;'>{$blk}</td>
-                            <td style='text-align:center; padding:5px; border:1px solid #c4d1db; font-family:Consolas, monospace; font-size:8pt;'>{$amIn}</td>
-                            <td style='text-align:center; padding:5px; border:1px solid #c4d1db; font-family:Consolas, monospace; font-size:8pt;'>{$amOut}</td>
-                            <td style='text-align:center; padding:5px; border:1px solid #c4d1db; font-family:Consolas, monospace; font-size:8pt;'>{$pmIn}</td>
-                            <td style='text-align:center; padding:5px; border:1px solid #c4d1db; font-family:Consolas, monospace; font-size:8pt;'>{$pmOut}</td>
-                            <td style='text-align:center; padding:5px; border:1px solid #c4d1db; font-weight:bold; color:{$stColor};'>{$st}</td>
-                            <td style='text-align:center; padding:5px; border:1px solid #c4d1db;'>{$dist}</td>
-                            <td style='text-align:right; padding:5px; border:1px solid #c4d1db; font-weight:bold;'>{$fine}</td>
-                        </tr>
-                    ";
-                } else {
-                    $timeIn = $r->scan_time ? $r->scan_time->format('h:i:s A') : ($r->am_time_in ? $r->am_time_in->format('h:i:s A') : '—');
-                    $timeOut = $r->checkout_time ? $r->checkout_time->format('h:i:s A') : ($r->pm_time_out ? $r->pm_time_out->format('h:i:s A') : '—');
-                    $rowsHtml .= "
-                        <tr>
-                            <td style='text-align:center; padding:6px; border:1px solid #c4d1db;'>{$num}</td>
-                            <td style='padding:6px; border:1px solid #c4d1db; font-weight:bold; white-space:nowrap;'>{$sNum}</td>
-                            <td style='padding:6px; border:1px solid #c4d1db; white-space:nowrap;'>{$name}</td>
-                            <td style='text-align:center; padding:6px; border:1px solid #c4d1db; white-space:nowrap;'>{$yr}</td>
-                            <td style='text-align:center; padding:6px; border:1px solid #c4d1db; white-space:nowrap;'>{$blk}</td>
-                            <td style='text-align:center; padding:6px; border:1px solid #c4d1db; font-family:Consolas, monospace;'>{$timeIn}</td>
-                            <td style='text-align:center; padding:6px; border:1px solid #c4d1db; font-family:Consolas, monospace;'>{$timeOut}</td>
-                            <td style='text-align:center; padding:6px; border:1px solid #c4d1db; font-weight:bold; color:{$stColor};'>{$st}</td>
-                            <td style='text-align:center; padding:6px; border:1px solid #c4d1db;'>{$dist}</td>
-                            <td style='text-align:right; padding:6px; border:1px solid #c4d1db; font-weight:bold;'>{$fine}</td>
-                        </tr>
-                    ";
-                }
-            }
+                $totalIncurredAll += $incurred;
+                $totalPaidAll += $paid;
+                $totalUnpaidAll += $balance;
 
-            $colspan = $isWholeDayEvent ? 12 : 10;
-            if (empty($rowsHtml)) {
-                $rowsHtml = "<tr><td colspan='{$colspan}' style='text-align:center; padding:15px; color:#888;'>No attendance records found for this event.</td></tr>";
-            }
+                $sNum = htmlspecialchars($u->student_number ?? 'N/A');
+                $name = htmlspecialchars($u->formal_name ?? $u->full_name ?? 'N/A');
+                $yr = htmlspecialchars($u->year_level ?? 'N/A');
+                $blk = htmlspecialchars($u->section_block ?? 'N/A');
 
-            $tableHeadersHtml = $isWholeDayEvent
-                ? "
+                $isCleared = $balance <= 0;
+                $statusText = $isCleared ? 'CLEARED' : 'UNPAID';
+                $statusColor = $isCleared ? '#16A34A' : '#DC2626';
+
+                $rowsHtml .= "
                     <tr>
-                        <th style='width:22px;'>#</th>
-                        <th style='width:80px;'>Student ID</th>
-                        <th>Student Full Name</th>
-                        <th style='width:50px;'>Year</th>
-                        <th style='width:50px;'>Block</th>
-                        <th style='width:68px;'>AM In</th>
-                        <th style='width:68px;'>AM Out</th>
-                        <th style='width:68px;'>PM In</th>
-                        <th style='width:68px;'>PM Out</th>
-                        <th style='width:60px;'>Status</th>
-                        <th style='width:50px;'>Distance</th>
-                        <th style='width:65px;'>Fine</th>
-                    </tr>
-                "
-                : "
-                    <tr>
-                        <th style='width:25px;'>#</th>
-                        <th style='width:90px;'>Student ID</th>
-                        <th>Student Full Name</th>
-                        <th style='width:55px;'>Year</th>
-                        <th style='width:55px;'>Block</th>
-                        <th style='width:75px;'>Time-In</th>
-                        <th style='width:75px;'>Time-Out</th>
-                        <th style='width:65px;'>Status</th>
-                        <th style='width:55px;'>Distance</th>
-                        <th style='width:70px;'>Fine</th>
+                        <td style='text-align:center; padding:6px; border:1px solid #c4d1db;'>{$num}</td>
+                        <td style='padding:6px; border:1px solid #c4d1db; font-weight:bold; white-space:nowrap;'>{$sNum}</td>
+                        <td style='padding:6px; border:1px solid #c4d1db; white-space:nowrap;'>{$name}</td>
+                        <td style='text-align:center; padding:6px; border:1px solid #c4d1db; white-space:nowrap;'>{$yr}</td>
+                        <td style='text-align:center; padding:6px; border:1px solid #c4d1db; white-space:nowrap;'>{$blk}</td>
+                        <td style='text-align:right; padding:6px; border:1px solid #c4d1db; font-weight:bold; white-space:nowrap;'>PHP " . number_format($incurred, 2) . "</td>
+                        <td style='text-align:right; padding:6px; border:1px solid #c4d1db; color:#16A34A; font-weight:bold; white-space:nowrap;'>PHP " . number_format($paid, 2) . "</td>
+                        <td style='text-align:right; padding:6px; border:1px solid #c4d1db; color:#DC2626; font-weight:bold; white-space:nowrap;'>PHP " . number_format($balance, 2) . "</td>
+                        <td style='text-align:center; padding:6px; border:1px solid #c4d1db; font-weight:bold; color:{$statusColor}; white-space:nowrap;'>{$statusText}</td>
+                        <td style='padding:6px; border:1px solid #c4d1db; text-align:center; color:#999; font-size:8pt; white-space:nowrap;'>_________________</td>
                     </tr>
                 ";
+            }
+
+            if (empty($rowsHtml)) {
+                $rowsHtml = "<tr><td colspan='10' style='text-align:center; padding:15px; color:#888;'>No student records found matching the active filters.</td></tr>";
+            }
 
             $docContent = "
             <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
             <head>
                 <meta charset='utf-8'>
-                <title>Official Event Attendance Report</title>
+                <title>Official Student Clearance & Fine Summary</title>
                 <style>
-                    @page { size: 8.5in 11in; margin: 0.6in; mso-page-orientation: portrait; }
-                    body { font-family: 'Calibri', 'Arial', sans-serif; font-size: 10.5pt; color: #17212B; line-height: 1.25; }
+                    @page { size: 8.5in 11in; margin: 0.5in; mso-page-orientation: portrait; }
+                    body { font-family: 'Calibri', 'Arial', sans-serif; font-size: 10pt; color: #17212B; line-height: 1.25; }
                     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-                    th { background-color: #063B5C; color: #FFFFFF; font-weight: bold; padding: 6px; border: 1px solid #063B5C; text-align: center; font-size: 8.5pt; }
-                    td { font-size: 8.5pt; }
+                    th { background-color: #063B5C; color: #FFFFFF; font-weight: bold; padding: 6px; border: 1px solid #063B5C; text-align: center; font-size: 9pt; }
+                    td { font-size: 9pt; }
                 </style>
             </head>
             <body>
@@ -585,28 +389,35 @@ class ReportController extends Controller
                         <td style='border:none; vertical-align:middle;'>
                             <div style='font-size:14pt; font-weight:bold; color:#063B5C;'>TALIBON POLYTECHNIC COLLEGE</div>
                             <div style='font-size:10pt; font-weight:bold; color:#0284C7;'>Bachelor of Science in Information Systems (BSIS)</div>
-                            <div style='font-size:9pt; color:#555;'>Official Event Attendance Verification Sheet</div>
+                            <div style='font-size:9pt; color:#555;'>Official Student Clearance & Fine Summary Masterlist</div>
                         </td>
                         <td style='border:none; text-align:right; font-size:8.5pt; color:#555; vertical-align:middle;'>
-                            <strong>Date Printed:</strong> {$printDate}
+                            <strong>Date Generated:</strong> {$printDate}
                         </td>
                     </tr>
                 </table>
 
                 <div style='background-color:#F4F8FA; border:1px solid #D1E3ED; padding:8px 12px; margin-bottom:10px; font-size:9pt;'>
-                    <div style='margin-bottom:3px;'><strong>Event Session:</strong> {$eventTitle} &nbsp;|&nbsp; <strong>Date:</strong> {$eventDate}</div>
-                    <div>
-                        <strong style='color:#063B5C;'>Total Scans:</strong> {$records->count()} &nbsp;|&nbsp;
-                        <strong style='color:#0d6efd;'>Present:</strong> {$presentCount} &nbsp;|&nbsp;
-                        <strong style='color:#fd7e14;'>Late:</strong> {$lateCount} &nbsp;|&nbsp;
-                        <strong style='color:#198754;'>Override:</strong> {$overrideCount} &nbsp;|&nbsp;
-                        <strong style='color:#DC2626;'>Total Fines:</strong> PHP " . number_format($totalFines, 2) . "
-                    </div>
+                    <strong style='color:#063B5C;'>Total Students Listed:</strong> {$num} &nbsp;|&nbsp;
+                    <strong style='color:#063B5C;'>Total Fines Incurred:</strong> PHP " . number_format($totalIncurredAll, 2) . " &nbsp;|&nbsp;
+                    <strong style='color:#16A34A;'>Total Paid:</strong> PHP " . number_format($totalPaidAll, 2) . " &nbsp;|&nbsp;
+                    <strong style='color:#DC2626;'>Total Balance Due:</strong> PHP " . number_format($totalUnpaidAll, 2) . "
                 </div>
 
                 <table>
                     <thead>
-                        {$tableHeadersHtml}
+                        <tr>
+                            <th style='width:25px;'>#</th>
+                            <th style='width:85px;'>Student ID</th>
+                            <th>Student Full Name</th>
+                            <th style='width:60px;'>Year</th>
+                            <th style='width:60px;'>Block</th>
+                            <th style='width:75px;'>Total Fine</th>
+                            <th style='width:75px;'>Paid</th>
+                            <th style='width:75px;'>Balance Due</th>
+                            <th style='width:65px;'>Status</th>
+                            <th style='width:105px;'>Signature</th>
+                        </tr>
                     </thead>
                     <tbody>
                         {$rowsHtml}
@@ -618,7 +429,7 @@ class ReportController extends Controller
                     <tr>
                         <td style='border:none; width:45%; text-align:center;'>
                             _______________________________________<br><br>
-                            <strong>BSIS Attendance Officer / Staff In-Charge</strong><br>
+                            <strong>BSIS Attendance Officer / Treasurer</strong><br>
                             <span style='font-size:8pt; color:#666;'>Signature over Printed Name</span>
                         </td>
                         <td style='border:none; width:10%;'></td>
@@ -639,66 +450,10 @@ class ReportController extends Controller
             ]);
         }
 
-        // CSV EXPORT
-        if ($type === 'fines') {
-            $filename = "BSIS_Student_Fines_Clearance_Summary_{$timestamp}.csv";
-
-            $headers = [
-                'Content-Type' => 'text/csv; charset=UTF-8',
-                'Content-Disposition' => "attachment; filename=\"{$filename}\"",
-                'Pragma' => 'no-cache',
-                'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
-                'Expires' => '0',
-            ];
-
-            $grouped = $records->groupBy('user_id');
-
-            $callback = function () use ($grouped) {
-                $file = fopen('php://output', 'w');
-                fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF)); // UTF-8 BOM
-
-                fputcsv($file, [
-                    'Student ID',
-                    'Student Full Name',
-                    'Year Level',
-                    'Block',
-                    'Institutional Email',
-                    'Total Fines Incurred (PHP)',
-                    'Total Fines Paid (PHP)',
-                    'Outstanding Balance Due (PHP)',
-                    'Clearance Status',
-                ]);
-
-                foreach ($grouped as $userId => $items) {
-                    $u = $items->first()->user;
-                    if (!$u) continue;
-
-                    $incurred = (float) $items->sum('fine_amount');
-                    $paid = (float) $items->where('fine_paid', true)->sum('fine_amount');
-                    $balance = max(0, $incurred - $paid);
-                    $status = $balance <= 0 ? 'CLEARED' : 'UNPAID';
-
-                    fputcsv($file, [
-                        $u->student_number ?? 'N/A',
-                        $u->formal_name ?? $u->full_name ?? 'N/A',
-                        $u->year_level ?? 'N/A',
-                        $u->section_block ?? 'N/A',
-                        $u->email ?? 'N/A',
-                        number_format($incurred, 2, '.', ''),
-                        number_format($paid, 2, '.', ''),
-                        number_format($balance, 2, '.', ''),
-                        $status,
-                    ]);
-                }
-
-                fclose($file);
-            };
-
-            return response()->stream($callback, 200, $headers);
-        }
-
-        // CSV Export for Attendance
-        $filename = "BSIS_Attendance_Report_{$eventSlug}_{$timestamp}.csv";
+        // CSV EXPORT (for both Attendance and Fines)
+        $filename = $type === 'fines' 
+            ? "BSIS_Student_Fines_Clearance_Summary_{$timestamp}.csv" 
+            : "BSIS_Student_Attendance_Clearance_Summary_{$eventSlug}_{$timestamp}.csv";
 
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
@@ -708,59 +463,48 @@ class ReportController extends Controller
             'Expires' => '0',
         ];
 
-        $callback = function () use ($records) {
-            $file = fopen('php://output', 'w');
-            
-            // Add UTF-8 BOM for Excel compatibility
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+        $grouped = $records->groupBy('user_id')->sortBy(function ($items) {
+            $u = $items->first()->user;
+            $last = strtoupper(trim($u->last_name ?? ''));
+            $first = strtoupper(trim($u->first_name ?? ''));
+            return $last . ' ' . $first;
+        });
 
-            // Column Headers
+        $callback = function () use ($grouped) {
+            $file = fopen('php://output', 'w');
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF)); // UTF-8 BOM
+
             fputcsv($file, [
                 'Student ID',
-                'Student Name',
+                'Student Full Name',
                 'Year Level',
                 'Block',
                 'Institutional Email',
-                'Event Title',
-                'Session Type',
-                'AM Time-In',
-                'AM Time-Out',
-                'PM Time-In',
-                'PM Time-Out',
-                'Status',
-                'Fine Amount (PHP)',
-                'Payment Status',
-                'Distance (Meters)',
-                'Is Offline Sync',
-                'Override Staff',
-                'Override Reason',
+                'Total Fines Incurred (PHP)',
+                'Total Fines Paid (PHP)',
+                'Outstanding Balance Due (PHP)',
+                'Clearance Status',
             ]);
 
-            foreach ($records as $row) {
-                $amIn = $row->am_time_in ? $row->am_time_in->format('h:i:s A') : ($row->scan_time ? $row->scan_time->format('h:i:s A') : '');
-                $amOut = $row->am_time_out ? $row->am_time_out->format('h:i:s A') : '';
-                $pmIn = $row->pm_time_in ? $row->pm_time_in->format('h:i:s A') : '';
-                $pmOut = $row->pm_time_out ? $row->pm_time_out->format('h:i:s A') : ($row->checkout_time ? $row->checkout_time->format('h:i:s A') : '');
+            foreach ($grouped as $userId => $items) {
+                $u = $items->first()->user;
+                if (!$u) continue;
+
+                $incurred = (float) $items->sum('fine_amount');
+                $paid = (float) $items->where('fine_paid', true)->sum('fine_amount');
+                $balance = max(0, $incurred - $paid);
+                $status = $balance <= 0 ? 'CLEARED' : 'UNPAID';
 
                 fputcsv($file, [
-                    $row->user->student_number ?? 'N/A',
-                    $row->user->formal_name ?? $row->user->full_name ?? 'N/A',
-                    $row->user->year_level ?? 'N/A',
-                    $row->user->section_block ?? 'N/A',
-                    $row->user->email ?? 'N/A',
-                    $row->event->title ?? 'N/A',
-                    $row->event->session_type === 'whole_day' ? 'EVENT (4 Scans)' : 'EVENT (2 Scans)',
-                    $amIn,
-                    $amOut,
-                    $pmIn,
-                    $pmOut,
-                    strtoupper($row->status),
-                    number_format($row->fine_amount, 2),
-                    $row->fine_paid ? 'PAID' : 'UNPAID',
-                    $row->distance_meters !== null ? $row->distance_meters . 'm' : 'N/A',
-                    $row->is_offline_sync ? 'YES' : 'NO',
-                    $row->overrider->full_name ?? 'N/A',
-                    $row->override_reason ?? 'N/A',
+                    $u->student_number ?? 'N/A',
+                    $u->formal_name ?? $u->full_name ?? 'N/A',
+                    $u->year_level ?? 'N/A',
+                    $u->section_block ?? 'N/A',
+                    $u->email ?? 'N/A',
+                    number_format($incurred, 2, '.', ''),
+                    number_format($paid, 2, '.', ''),
+                    number_format($balance, 2, '.', ''),
+                    $status,
                 ]);
             }
 
