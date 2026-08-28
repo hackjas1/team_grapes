@@ -894,7 +894,7 @@
             box-shadow: 0 0 12px rgba(53, 196, 232, 0.25);
         }
 
-        /* Right Form Side: Both BSIS Logo (Left) and TPC School Front (Right) Blended Behind the White Background */
+        /* Right Form Side: Both BSIS Logo (Top Right) and TPC School Front (Clearly Visible) Behind the Form */
         .admin-login-form-side {
             padding: 44px 40px;
             display: flex;
@@ -908,17 +908,17 @@
 
         .admin-login-form-bg-logo {
             position: absolute;
-            top: 15px;
-            right: 15px;
-            width: 150px;
-            height: 150px;
+            top: -20px;
+            right: -20px;
+            width: 230px;
+            height: 230px;
             background-image: url('/images/bsis-logo.png');
             background-size: contain;
             background-repeat: no-repeat;
-            opacity: 0.12;
+            opacity: 0.18;
             pointer-events: none;
             z-index: 0;
-            filter: drop-shadow(0 4px 16px rgba(6, 59, 92, 0.2));
+            filter: drop-shadow(0 4px 16px rgba(6, 59, 92, 0.25));
         }
 
         .admin-login-form-bg-building {
@@ -929,12 +929,12 @@
             bottom: 0;
             background-image: url('/images/tpc-school-front.png');
             background-size: cover;
-            background-position: center 35%;
+            background-position: center 20%;
             background-repeat: no-repeat;
-            opacity: 0.45;
+            opacity: 0.72;
             pointer-events: none;
             z-index: 0;
-            filter: saturate(1.18) brightness(1.02);
+            filter: saturate(1.22) contrast(1.06);
         }
 
         .admin-login-form-bg-overlay {
@@ -943,9 +943,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.84) 0%, rgba(255, 255, 255, 0.70) 45%, rgba(255, 255, 255, 0.86) 100%);
-            backdrop-filter: blur(1.5px);
-            -webkit-backdrop-filter: blur(1.5px);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.76) 0%, rgba(255, 255, 255, 0.58) 45%, rgba(255, 255, 255, 0.80) 100%);
             pointer-events: none;
             z-index: 1;
         }
@@ -999,6 +997,7 @@
             border-radius: 10px;
             border: 1.5px solid #CBD5E1;
             background-color: #FFFFFF !important;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.07);
             font-size: 0.92rem;
             transition: all 0.2s ease;
             position: relative;
