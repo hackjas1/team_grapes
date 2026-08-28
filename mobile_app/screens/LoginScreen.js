@@ -46,17 +46,13 @@ export default function LoginScreen({ navigation }) {
   const [resetError, setResetError] = useState('');
   const [resetSuccess, setResetSuccess] = useState('');
 
-  // Open external URLs in device browser
+  // Open external URLs in device browser or Facebook app
   const openExternalUrl = async (url) => {
     try {
-      const supported = await Linking.canOpenURL(url);
-      if (supported) {
-        await Linking.openURL(url);
-      } else {
-        Alert.alert('Error', `Cannot open URL: ${url}`);
-      }
+      await Linking.openURL(url);
     } catch (error) {
-      Alert.alert('Error', 'Failed to open the link.');
+      console.warn('Failed to open URL:', error);
+      Alert.alert('Notice', 'Could not open the link in your browser. Please visit: ' + url);
     }
   };
 
