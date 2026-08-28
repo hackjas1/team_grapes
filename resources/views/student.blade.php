@@ -770,7 +770,7 @@
                         </div>
                         <div class="footer-contact-item">
                             <i class="bi bi-facebook"></i>
-                            <a href="https://facebook.com/TalibonPolytechniCollege" target="_blank" rel="noopener noreferrer">TalibonPolytechniCollege</a>
+                            <a href="https://www.facebook.com/TalibonPolytechnicCollege" target="_blank" rel="noopener noreferrer">TalibonPolytechnicCollege</a>
                         </div>
                         <div class="footer-contact-item">
                             <i class="bi bi-envelope"></i>

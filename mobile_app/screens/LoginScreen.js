@@ -46,6 +46,20 @@ export default function LoginScreen({ navigation }) {
   const [resetError, setResetError] = useState('');
   const [resetSuccess, setResetSuccess] = useState('');
 
+  // Open external URLs in device browser
+  const openExternalUrl = async (url) => {
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert('Error', `Cannot open URL: ${url}`);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to open the link.');
+    }
+  };
+
   useEffect(() => {
     (async () => {
       try {
