@@ -59,6 +59,15 @@ const StudentPWA = {
         this.handleRoute();
     },
 
+    openIosGuideModal(e) {
+        if (e && e.preventDefault) e.preventDefault();
+        const modalEl = document.getElementById('modal-ios-guide');
+        if (modalEl && window.bootstrap && window.bootstrap.Modal) {
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        }
+    },
+
     updateOnlineStatus() {
         const statusBanner = document.getElementById('offline-banner');
         if (statusBanner) {

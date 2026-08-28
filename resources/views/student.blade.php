@@ -230,6 +230,12 @@
             color: var(--bsis-cyan);
             flex-shrink: 0;
         }
+        .modal {
+            z-index: 1060 !important;
+        }
+        .modal-backdrop {
+            z-index: 1050 !important;
+        }
     </style>
 </head>
 <body>
@@ -267,7 +273,7 @@
                         <i class="bi bi-android2 fs-4"></i>
                         <span>Download for Android (APK)</span>
                     </a>
-                    <button type="button" class="btn-download-ios" data-bs-toggle="modal" data-bs-target="#modal-ios-guide">
+                    <button type="button" class="btn-download-ios" onclick="StudentPWA.openIosGuideModal(event)" data-bs-toggle="modal" data-bs-target="#modal-ios-guide">
                         <i class="bi bi-apple fs-4"></i>
                         <span>Install on iOS (iPhone / iPad)</span>
                     </button>
@@ -323,7 +329,7 @@
                                     <strong class="d-block text-dark mb-1">Install App & Auto-Bind Your Smartphone</strong>
                                     <div class="text-muted small mb-0" style="line-height: 1.5;">
                                         <div class="mb-1"><strong>🤖 Android:</strong> Install the APK and sign in with your Student ID and password.</div>
-                                        <div><strong>🍎 iOS (iPhone/iPad):</strong> Install <a href="https://apps.apple.com/app/expo-go/id982105225" target="_blank" class="fw-bold text-decoration-none">Expo Go</a> from the App Store or open via <a href="#" data-bs-toggle="modal" data-bs-target="#modal-ios-guide" class="fw-bold text-decoration-none">iOS Guide</a>.</div>
+                                        <div><strong>🍎 iOS (iPhone/iPad):</strong> Install <a href="https://apps.apple.com/app/expo-go/id982105225" target="_blank" class="fw-bold text-decoration-none">Expo Go</a> from the App Store or open via <a href="javascript:void(0)" onclick="StudentPWA.openIosGuideModal(event)" data-bs-toggle="modal" data-bs-target="#modal-ios-guide" class="fw-bold text-decoration-none" role="button">iOS Guide</a>.</div>
                                     </div>
                                 </div>
                             </div>
@@ -472,11 +478,16 @@
                                     <i class="bi bi-android2 fs-4"></i>
                                     <span>Download for Android (APK)</span>
                                 </a>
-                                <button type="button" class="btn btn-outline-dark w-100 py-2 fw-bold" data-bs-toggle="modal" data-bs-target="#modal-ios-guide" style="border-radius: 12px;">
+                                <button type="button" class="btn btn-outline-dark w-100 py-2 fw-bold" onclick="StudentPWA.openIosGuideModal(event)" data-bs-toggle="modal" data-bs-target="#modal-ios-guide" style="border-radius: 12px;">
                                     <i class="bi bi-apple me-1"></i> iOS Installation Guide (iPhone / iPad)
                                 </button>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- ==========================================
              VIEW 3: SECURE STUDENT PASSWORD RESET
              ========================================== -->
@@ -574,7 +585,9 @@
             </div>
         </section>
 
-        <!-- Confirmation Modal -->
+    </main>
+
+    <!-- Confirmation Modal -->
         <div class="modal fade" id="modal-confirm-onboard" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
                 <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
@@ -731,8 +744,6 @@
                 </div>
             </div>
         </div>
-
-    </main>
 
     <!-- Institutional Footer with Official Contact Details -->
     <footer class="footer-sec">
