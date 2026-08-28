@@ -806,20 +806,39 @@
             z-index: 1;
         }
 
-        /* Faded Large TPC Logo Watermark on the Left Hero Side */
+        /* Centered Large TPC Logo Watermark on the Left Hero Side */
         .admin-login-hero-bg-logo {
             position: absolute;
-            bottom: -30px;
-            left: -40px;
-            width: 300px;
-            height: 300px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 320px;
+            height: 320px;
             background-image: url('/images/tpc-logo.png');
             background-size: contain;
             background-repeat: no-repeat;
-            opacity: 0.12;
+            opacity: 0.11;
             pointer-events: none;
             z-index: 0;
-            filter: drop-shadow(0 0 24px rgba(53, 196, 232, 0.4));
+            filter: drop-shadow(0 0 24px rgba(53, 196, 232, 0.35));
+        }
+
+        /* Subtle TPC School Front in the Background of Left Hero (Not too visible) */
+        .admin-login-hero-bg-building {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('/images/tpc-school-front.png');
+            background-size: cover;
+            background-position: center right;
+            background-repeat: no-repeat;
+            opacity: 0.12;
+            mask-image: linear-gradient(135deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.6) 100%);
+            -webkit-mask-image: linear-gradient(135deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.6) 100%);
+            pointer-events: none;
+            z-index: 0;
         }
 
         /* Ambient Cyan Glow */
@@ -1216,9 +1235,12 @@
             <div class="admin-login-wrapper">
                 <div class="admin-login-card-container">
                     <div class="row g-0">
-                        <!-- Desktop Left Only: Institutional Showcase with TPC Logo (Left) & Features -->
+                        <!-- Desktop Left Only: Institutional Showcase with Centered TPC Logo & Subtle School Front -->
                         <div class="col-lg-6 d-none d-lg-flex admin-login-hero-side">
-                            <!-- Background Layer: Faded Large TPC Logo Watermark on the Left -->
+                            <!-- Background Layer 1: Subtle TPC School Front in Background (Not too visible) -->
+                            <div class="admin-login-hero-bg-building"></div>
+                            
+                            <!-- Background Layer 2: Centered Large TPC Logo Watermark -->
                             <div class="admin-login-hero-bg-logo"></div>
 
                             <!-- Hero Content -->
