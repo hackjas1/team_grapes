@@ -4065,7 +4065,38 @@ const AdminApp = {
 
                 if (res.ok && res.data.success) {
                     bootstrap.Modal.getInstance(document.getElementById('modal-create-student')).hide();
-                    this.showToast(`${roleLabel} registered and onboarding email sent!`, 'success');
+                    const emailSent = res.data?.data?.email_sent;
+                    const emailError = res.data?.data?.email_error;
+                    const onboardingUrl = res.data?.data?.onboarding_url;
+
+                    if (emailSent === false) {
+                        this.showToast(`Account created! ⚠️ Email could not be sent: ${emailError || 'SMTP Error'}`, 'warning', 8000);
+                        if (onboardingUrl) {
+                            this.showConfirm({
+                                title: 'Account Created — Email Not Sent',
+                                message: `
+                                    <p class="small text-muted mb-2">The account was saved successfully, but the activation email could not be delivered.</p>
+                                    <p class="small text-danger mb-3"><strong>Reason:</strong> ${emailError || 'SMTP Error'}</p>
+                                    <div class="mb-2 text-start">
+                                        <label class="form-label small fw-bold text-dark">Direct Activation Link:</label>
+                                        <input type="text" class="form-control form-control-sm" readonly value="${onboardingUrl}" id="direct-student-onboarding-link">
+                                    </div>
+                                    <p class="small text-muted mb-0">You can copy and send this link directly to the student.</p>
+                                `,
+                                icon: 'bi-exclamation-triangle-fill',
+                                type: 'warning',
+                                confirmText: 'Copy Link & Close',
+                                cancelText: 'Close',
+                                confirmClass: 'btn-primary',
+                                onConfirm: () => {
+                                    navigator.clipboard.writeText(onboardingUrl);
+                                    this.showToast('Activation link copied to clipboard!', 'success');
+                                }
+                            });
+                        }
+                    } else {
+                        this.showToast(`${roleLabel} registered and onboarding email sent!`, 'success');
+                    }
                     this.loadUsers();
                     
                     // Clear input fields

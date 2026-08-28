@@ -80,12 +80,18 @@ class StudentProvisioningController extends Controller
 
         // Send onboarding email outside DB transaction
         $emailSent = false;
+        $emailError = null;
         try {
             Mail::to($user->email)->send(new StudentOnboardingMail($user, $onboardingUrl, $downloadUrl, $studentHubUrl));
             $emailSent = true;
         } catch (\Throwable $e) {
-            Log::error("Failed to send onboarding email to {$user->email}: " . $e->getMessage());
+            $emailError = $e->getMessage();
+            Log::error("Failed to send onboarding email to {$user->email}: " . $emailError);
         }
+
+        $message = $emailSent 
+            ? 'Student account provisioned successfully. Onboarding email sent.'
+            : "Student account created, but email could not be sent: {$emailError}";
 
         return $this->successResponse([
             'student' => [
@@ -98,9 +104,10 @@ class StudentProvisioningController extends Controller
                 'status' => $user->status,
             ],
             'email_sent' => $emailSent,
+            'email_error' => $emailError,
             'onboarding_url' => $onboardingUrl,
             'expires_at' => $onboardingToken->expires_at,
-        ], $emailSent ? 'Student account provisioned successfully. Onboarding email sent.' : 'Student account provisioned successfully.', 201);
+        ], $message, 201);
     }
 
     /**
