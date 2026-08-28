@@ -889,35 +889,33 @@
 
         .admin-login-form-bg-logo {
             position: absolute;
-            bottom: -20px;
-            left: -30px;
-            width: 260px;
-            height: 260px;
+            top: 15px;
+            right: 15px;
+            width: 150px;
+            height: 150px;
             background-image: url('/images/bsis-logo.png');
             background-size: contain;
             background-repeat: no-repeat;
-            opacity: 0.08;
+            opacity: 0.12;
             pointer-events: none;
             z-index: 0;
-            filter: drop-shadow(0 0 16px rgba(6, 59, 92, 0.15));
+            filter: drop-shadow(0 4px 16px rgba(6, 59, 92, 0.2));
         }
 
         .admin-login-form-bg-building {
             position: absolute;
             top: 0;
+            left: 0;
             right: 0;
             bottom: 0;
-            width: 75%;
             background-image: url('/images/tpc-school-front.png');
             background-size: cover;
-            background-position: center right;
+            background-position: center 35%;
             background-repeat: no-repeat;
-            opacity: 0.16;
-            mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.5) 30%, rgba(0,0,0,1) 100%);
-            -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.5) 30%, rgba(0,0,0,1) 100%);
+            opacity: 0.45;
             pointer-events: none;
             z-index: 0;
-            filter: saturate(1.1);
+            filter: saturate(1.18) brightness(1.02);
         }
 
         .admin-login-form-bg-overlay {
@@ -926,7 +924,9 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.92) 100%);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.84) 0%, rgba(255, 255, 255, 0.70) 45%, rgba(255, 255, 255, 0.86) 100%);
+            backdrop-filter: blur(1.5px);
+            -webkit-backdrop-filter: blur(1.5px);
             pointer-events: none;
             z-index: 1;
         }
@@ -941,7 +941,7 @@
             display: none;
             position: relative;
             overflow: hidden;
-            background: linear-gradient(135deg, #063B5C 0%, #032134 100%);
+            background: linear-gradient(90deg, rgba(6, 59, 92, 0.95) 0%, rgba(6, 59, 92, 0.85) 45%, rgba(6, 59, 92, 0.40) 75%, rgba(6, 59, 92, 0.20) 100%), url('/images/tpc-school-front.png') right center / cover no-repeat;
             border-radius: 20px 20px 0 0;
             padding: 22px 20px;
             color: #FFFFFF;
