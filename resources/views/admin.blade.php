@@ -958,11 +958,12 @@
             display: none;
             position: relative;
             overflow: hidden;
-            background: linear-gradient(90deg, rgba(6, 59, 92, 0.95) 0%, rgba(6, 59, 92, 0.85) 45%, rgba(6, 59, 92, 0.40) 75%, rgba(6, 59, 92, 0.20) 100%), url('/images/tpc-school-front.png') right center / cover no-repeat;
+            background: linear-gradient(90deg, rgba(6, 59, 92, 0.98) 0%, rgba(6, 59, 92, 0.92) 55%, rgba(6, 59, 92, 0.72) 80%, rgba(6, 59, 92, 0.45) 100%), url('/images/tpc-school-front.png') right center / cover no-repeat;
             border-radius: 20px 20px 0 0;
             padding: 22px 20px;
             color: #FFFFFF;
             margin: -32px -24px 22px -24px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
         }
 
         .admin-login-mobile-content {
@@ -1084,6 +1085,17 @@
             }
             .admin-login-mobile-banner {
                 display: block;
+            }
+            /* Lower opacity of TPC school front photo ONLY on mobile & tablet */
+            .admin-login-form-bg-building {
+                opacity: 0.16 !important;
+                filter: saturate(1.1) !important;
+            }
+            .admin-login-form-bg-overlay {
+                background: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(255, 255, 255, 0.90) 100%) !important;
+            }
+            .admin-login-form-bg-logo {
+                opacity: 0.07 !important;
             }
         }
     </style>
@@ -1309,11 +1321,11 @@
                                 <!-- Mobile-Only Blended Institutional Header Banner (< 992px) -->
                                 <div class="admin-login-mobile-banner">
                                     <div class="admin-login-mobile-content d-flex align-items-center gap-3">
-                                        <img src="/images/bsis-logo.png" alt="BSIS Logo" style="height: 48px; width: 48px; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3)); flex-shrink: 0;">
-                                        <img src="/images/tpc-logo.png" alt="Talibon Polytechnic College" style="height: 46px; width: 46px; border-radius: 50%; border: 2px solid rgba(53, 196, 232, 0.6); background: #fff; padding: 2px; flex-shrink: 0;">
+                                        <img src="/images/tpc-logo.png" alt="Talibon Polytechnic College" style="height: 48px; width: 48px; border-radius: 50%; border: 2px solid rgba(53, 196, 232, 0.8); background: #fff; padding: 2px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
+                                        <img src="/images/bsis-logo.png" alt="BSIS Logo" style="height: 46px; width: 46px; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4)); flex-shrink: 0;">
                                         <div class="text-start">
-                                            <div class="fw-bold text-white fs-6" style="line-height: 1.25; font-size: 0.95rem !important;">TALIBON POLYTECHNIC COLLEGE</div>
-                                            <div style="color: var(--color-accent); font-size: 0.76rem; font-weight: 700; letter-spacing: 0.5px;">BSIS DEPARTMENT &bull; CONTROL CENTER</div>
+                                            <div class="fw-bold text-white fs-6" style="line-height: 1.25; font-size: 0.95rem !important; text-shadow: 0 2px 6px rgba(0,0,0,0.85); letter-spacing: 0.2px;">TALIBON POLYTECHNIC COLLEGE</div>
+                                            <div style="color: #38BDF8; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.6px; text-shadow: 0 2px 6px rgba(0,0,0,0.9); margin-top: 1px;">BSIS DEPARTMENT &bull; CONTROL CENTER</div>
                                         </div>
                                     </div>
                                 </div>
