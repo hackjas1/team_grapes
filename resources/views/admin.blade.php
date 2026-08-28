@@ -1086,16 +1086,17 @@
             .admin-login-mobile-banner {
                 display: block;
             }
-            /* Lower opacity of TPC school front photo ONLY on mobile & tablet */
+            /* Balanced TPC school front visibility on mobile & tablet */
             .admin-login-form-bg-building {
-                opacity: 0.16 !important;
-                filter: saturate(1.1) !important;
+                opacity: 0.42 !important;
+                background-position: center 25% !important;
+                filter: saturate(1.18) contrast(1.04) !important;
             }
             .admin-login-form-bg-overlay {
-                background: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(255, 255, 255, 0.90) 100%) !important;
+                background: linear-gradient(180deg, rgba(255, 255, 255, 0.82) 0%, rgba(255, 255, 255, 0.65) 45%, rgba(255, 255, 255, 0.84) 100%) !important;
             }
             .admin-login-form-bg-logo {
-                opacity: 0.07 !important;
+                opacity: 0.12 !important;
             }
         }
     </style>
