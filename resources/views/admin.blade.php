@@ -768,7 +768,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #F0F4F8 0%, #E2E8F0 100%) !important;
+            background: #041B2B radial-gradient(circle at 15% 50%, rgba(53, 196, 232, 0.12) 0%, transparent 55%), radial-gradient(circle at 85% 50%, rgba(6, 59, 92, 0.4) 0%, transparent 60%) !important;
+            position: relative;
         }
 
         .admin-login-wrapper {
@@ -778,20 +779,23 @@
             align-items: center;
             justify-content: center;
             padding: 24px 16px;
+            position: relative;
+            z-index: 2;
         }
 
         .admin-login-card-container {
             width: 100%;
-            max-width: 1020px;
+            max-width: 1040px;
             background: #FFFFFF;
             border-radius: 24px;
             overflow: hidden;
-            box-shadow: 0 24px 70px rgba(6, 59, 92, 0.16), 0 2px 6px rgba(0,0,0,0.04);
-            border: 1px solid #E2E8F0;
+            box-shadow: 0 28px 80px rgba(0, 0, 0, 0.35), 0 4px 12px rgba(6, 59, 92, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.15);
         }
 
+        /* Desktop Left Hero Side: BSIS Logo on Left + TPC School Front Faded on Right */
         .admin-login-hero-side {
-            background: linear-gradient(145deg, #063B5C 0%, #032134 100%);
+            background: linear-gradient(135deg, #063B5C 0%, #032134 100%);
             color: #FFFFFF;
             padding: 44px 38px;
             position: relative;
@@ -799,57 +803,136 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            z-index: 1;
         }
 
+        /* Faded TPC School Front Picture on the Right */
+        .admin-login-hero-bg-building {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 78%;
+            background-image: url('/images/tpc-school-front.png');
+            background-size: cover;
+            background-position: center right;
+            background-repeat: no-repeat;
+            opacity: 0.38;
+            mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.5) 30%, rgba(0,0,0,1) 100%);
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.5) 30%, rgba(0,0,0,1) 100%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Faded Large BSIS Logo Watermark on the Left */
+        .admin-login-hero-bg-logo {
+            position: absolute;
+            bottom: -30px;
+            left: -40px;
+            width: 280px;
+            height: 280px;
+            background-image: url('/images/bsis-logo.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            opacity: 0.08;
+            pointer-events: none;
+            z-index: 0;
+            filter: drop-shadow(0 0 20px rgba(53, 196, 232, 0.3));
+        }
+
+        /* Ambient Cyan Glow */
         .admin-login-hero-side::before {
             content: '';
             position: absolute;
             top: -60px;
-            right: -60px;
+            left: -60px;
             width: 240px;
             height: 240px;
-            background: radial-gradient(circle, rgba(53, 196, 232, 0.22) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(53, 196, 232, 0.25) 0%, transparent 70%);
             border-radius: 50%;
             pointer-events: none;
+            z-index: 0;
+        }
+
+        .admin-login-hero-content {
+            position: relative;
+            z-index: 2;
         }
 
         .admin-login-feature-item {
             display: flex;
             align-items: center;
             gap: 14px;
-            padding: 12px 14px;
+            padding: 11px 14px;
             border-radius: 12px;
-            background: rgba(255, 255, 255, 0.07);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.09);
+            background: rgba(6, 59, 92, 0.45);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.14);
             margin-bottom: 10px;
-            transition: transform 0.2s ease, background 0.2s ease;
+            transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
         }
 
         .admin-login-feature-item:hover {
             transform: translateX(4px);
-            background: rgba(255, 255, 255, 0.12);
+            background: rgba(6, 59, 92, 0.65);
+            border-color: rgba(53, 196, 232, 0.4);
         }
 
         .admin-login-feature-icon {
             width: 36px;
             height: 36px;
             border-radius: 8px;
-            background: rgba(53, 196, 232, 0.2);
+            background: rgba(53, 196, 232, 0.22);
             color: #35C4E8;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.15rem;
             flex-shrink: 0;
+            box-shadow: 0 0 12px rgba(53, 196, 232, 0.25);
         }
 
         .admin-login-form-side {
-            padding: 48px 44px;
+            padding: 44px 40px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             background: #FFFFFF;
+        }
+
+        /* Mobile-Only Blended Hero Banner (< 992px) */
+        .admin-login-mobile-banner {
+            display: none;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #063B5C 0%, #032134 100%);
+            border-radius: 20px 20px 0 0;
+            padding: 22px 20px;
+            color: #FFFFFF;
+            margin: -32px -24px 22px -24px;
+        }
+
+        .admin-login-mobile-bg-building {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 65%;
+            background-image: url('/images/tpc-school-front.png');
+            background-size: cover;
+            background-position: center right;
+            background-repeat: no-repeat;
+            opacity: 0.38;
+            mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.6) 30%, rgba(0,0,0,1) 100%);
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.6) 30%, rgba(0,0,0,1) 100%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .admin-login-mobile-content {
+            position: relative;
+            z-index: 2;
         }
 
         .admin-input-group {
@@ -950,17 +1033,20 @@
 
         @media (max-width: 991.98px) {
             .admin-login-wrapper {
-                padding: 24px 14px;
+                padding: 20px 12px;
                 align-items: center;
                 min-height: 100vh;
             }
             .admin-login-card-container {
-                max-width: 460px;
+                max-width: 480px;
                 border-radius: 20px;
-                box-shadow: 0 12px 40px rgba(6, 59, 92, 0.12);
+                box-shadow: 0 16px 50px rgba(0, 0, 0, 0.4);
             }
             .admin-login-form-side {
                 padding: 32px 24px 28px 24px;
+            }
+            .admin-login-mobile-banner {
+                display: block;
             }
         }
     </style>
@@ -1111,21 +1197,29 @@
             <div class="admin-login-wrapper">
                 <div class="admin-login-card-container">
                     <div class="row g-0">
-                        <!-- Desktop Left Only: Institutional Showcase & Security Overview (Hidden on Mobile) -->
+                        <!-- Desktop Left Only: Institutional Showcase with BSIS Logo (Left) & TPC School Front (Right) -->
                         <div class="col-lg-6 d-none d-lg-flex admin-login-hero-side">
-                            <div>
+                            <!-- Background Layer 1: Faded TPC School Front on the Right -->
+                            <div class="admin-login-hero-bg-building"></div>
+                            
+                            <!-- Background Layer 2: Faded Large BSIS Logo Watermark on the Left -->
+                            <div class="admin-login-hero-bg-logo"></div>
+
+                            <!-- Hero Content (Above Blended Background) -->
+                            <div class="admin-login-hero-content">
+                                <!-- Institutional Logo Pairing: BSIS Logo on the Left, TPC Logo on the Right -->
                                 <div class="d-flex align-items-center gap-3 mb-4">
-                                    <img src="/images/tpc-logo.png" alt="Talibon Polytechnic College" style="height: 54px; width: 54px; border-radius: 50%; border: 2px solid rgba(53, 196, 232, 0.4); background: #fff; padding: 2px;">
-                                    <img src="/images/bsis-logo.png" alt="BSIS Logo" style="height: 54px; width: 54px; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.2));">
+                                    <img src="/images/bsis-logo.png" alt="BSIS Logo" style="height: 56px; width: 56px; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.35)); flex-shrink: 0;">
+                                    <img src="/images/tpc-logo.png" alt="Talibon Polytechnic College" style="height: 54px; width: 54px; border-radius: 50%; border: 2px solid rgba(53, 196, 232, 0.6); background: #fff; padding: 2px; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
                                     <div>
-                                        <div class="fw-bold text-white fs-6" style="line-height: 1.2;">Talibon Polytechnic College</div>
-                                        <div style="color: var(--color-accent); font-size: 0.76rem; font-weight: 600; letter-spacing: 0.5px;">BSIS Department &bull; Control Center</div>
+                                        <div class="fw-bold text-white fs-6" style="line-height: 1.25; letter-spacing: 0.2px;">TALIBON POLYTECHNIC COLLEGE</div>
+                                        <div style="color: var(--color-accent); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.6px;">BSIS DEPARTMENT &bull; CONTROL CENTER</div>
                                     </div>
                                 </div>
 
-                                <h3 class="fw-bold text-white mb-2">BSIS Attendance Monitoring System</h3>
-                                <p class="text-light opacity-75 small mb-4" style="line-height: 1.55;">
-                                    Centralized administrative platform for event scheduling, dynamic QR code broadcasting, GPS geofence monitoring, automated fines calculation, and institutional clearance.
+                                <h3 class="fw-bold text-white mb-2" style="font-size: 1.45rem; letter-spacing: -0.02em;">BSIS Attendance Monitoring System</h3>
+                                <p class="text-light opacity-80 small mb-4" style="line-height: 1.6; max-width: 420px;">
+                                    Centralized administrative platform for event scheduling, dynamic QR broadcasting, GPS geofence monitoring, automated fines calculation, and institutional clearance.
                                 </p>
 
                                 <div class="mb-4">
@@ -1161,29 +1255,32 @@
                                 </div>
                             </div>
 
-                            <div class="d-flex align-items-center justify-content-between pt-3 border-top border-white border-opacity-10" style="font-size: 0.76rem;">
-                                <span class="text-light opacity-75"><i class="bi bi-circle-fill text-success me-1" style="font-size: 0.55rem;"></i> System Live & Secure</span>
-                                <span class="text-light opacity-50">Cloudflare Protected</span>
+                            <div class="admin-login-hero-content d-flex align-items-center justify-content-between pt-3 border-top border-white border-opacity-15" style="font-size: 0.76rem;">
+                                <span class="text-light opacity-85"><i class="bi bi-circle-fill text-success me-1" style="font-size: 0.55rem;"></i> System Live & Secure</span>
+                                <span class="text-light opacity-65"><i class="bi bi-shield-lock me-1"></i> Cloudflare Protected</span>
                             </div>
                         </div>
 
                         <!-- Right on Desktop, Full Card on Mobile: Sleek Sign In Form -->
                         <div class="col-12 col-lg-6 admin-login-form-side">
-                            <!-- Mobile-Only Clean Institutional Branding Header -->
-                            <div class="d-flex d-lg-none align-items-center gap-3 mb-4 pb-3 border-bottom">
-                                <img src="/images/tpc-logo.png" alt="Talibon Polytechnic College" style="height: 48px; width: 48px; border-radius: 50%; border: 2px solid rgba(6, 59, 92, 0.2); background: #fff; padding: 2px; flex-shrink: 0;">
-                                <img src="/images/bsis-logo.png" alt="BSIS Logo" style="height: 48px; width: 48px; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.12)); flex-shrink: 0;">
-                                <div class="text-start">
-                                    <div class="fw-bold text-dark fs-6" style="line-height: 1.25;">TALIBON POLYTECHNIC COLLEGE</div>
-                                    <div style="color: var(--color-primary); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.3px;">BSIS Department</div>
+                            <!-- Mobile-Only Blended Institutional Header Banner (< 992px) -->
+                            <div class="admin-login-mobile-banner">
+                                <div class="admin-login-mobile-bg-building"></div>
+                                <div class="admin-login-mobile-content d-flex align-items-center gap-3">
+                                    <img src="/images/bsis-logo.png" alt="BSIS Logo" style="height: 48px; width: 48px; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3)); flex-shrink: 0;">
+                                    <img src="/images/tpc-logo.png" alt="Talibon Polytechnic College" style="height: 46px; width: 46px; border-radius: 50%; border: 2px solid rgba(53, 196, 232, 0.6); background: #fff; padding: 2px; flex-shrink: 0;">
+                                    <div class="text-start">
+                                        <div class="fw-bold text-white fs-6" style="line-height: 1.25; font-size: 0.95rem !important;">TALIBON POLYTECHNIC COLLEGE</div>
+                                        <div style="color: var(--color-accent); font-size: 0.76rem; font-weight: 700; letter-spacing: 0.5px;">BSIS DEPARTMENT &bull; CONTROL CENTER</div>
+                                    </div>
                                 </div>
                             </div>
 
                             <div class="mb-4">
-                                <div class="d-inline-flex align-items-center gap-2 px-2 py-1 rounded bg-primary bg-opacity-10 text-primary small fw-bold mb-2">
+                                <div class="d-inline-flex align-items-center gap-2 px-2.5 py-1 rounded-pill bg-primary bg-opacity-10 text-primary small fw-bold mb-2" style="font-size: 0.78rem;">
                                     <i class="bi bi-shield-lock-fill"></i> Authorized Personnel Only
                                 </div>
-                                <h4 class="fw-bold text-dark mb-1">Faculty & Staff Login</h4>
+                                <h4 class="fw-bold text-dark mb-1" style="letter-spacing: -0.02em;">Faculty & Staff Login</h4>
                                 <p class="text-muted small mb-0">Enter your institutional credentials to access the management dashboard.</p>
                             </div>
 
@@ -1219,7 +1316,7 @@
                             </form>
 
                             <div class="admin-login-footer">
-                                <div class="text-muted mb-1">Talibon Polytechnic College &bull; BSIS Department</div>
+                                <div class="text-muted mb-1 fw-semibold">Talibon Polytechnic College &bull; BSIS Department</div>
                                 <div class="text-muted opacity-75" style="font-size: 0.74rem;">BSIS Attendance Monitoring System &bull; Version 1.0.0</div>
                             </div>
                         </div>
