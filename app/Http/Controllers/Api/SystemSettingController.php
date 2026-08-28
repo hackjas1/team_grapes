@@ -77,4 +77,36 @@ class SystemSettingController extends Controller
             'external_apk_url' => SystemSetting::get('external_apk_url', env('EXTERNAL_APK_URL', '')),
         ], 'System settings updated successfully.');
     }
+
+    /**
+     * Send a test email to verify SMTP configuration (Admin only).
+     */
+    public function testEmail(Request $request): JsonResponse
+    {
+        $admin = $request->user();
+        if ($admin->role !== 'admin') {
+            return $this->errorResponse('Only administrators can send test emails.', [], 403);
+        }
+
+        $validated = $request->validate([
+            'email' => ['required', 'email'],
+        ]);
+
+        try {
+            \Illuminate\Support\Facades\Mail::raw("Hello {$admin->first_name},\n\nThis is a live test email from your TPC BSIS Attendance Monitoring System.\n\n✅ Your Gmail SMTP configuration is active and working properly!\n\nSent at: " . now()->toDateTimeString(), function ($message) use ($validated) {
+                $message->to($validated['email'])
+                        ->subject('✅ SMTP Live Test — TPC BSIS Attendance');
+            });
+
+            return $this->successResponse([
+                'recipient' => $validated['email'],
+                'timestamp' => now()->toDateTimeString(),
+            ], "Test email sent successfully to {$validated['email']}. Please check your inbox!");
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("SMTP Test Email Error: " . $e->getMessage());
+            return $this->errorResponse("SMTP Error: " . $e->getMessage(), [
+                'exception' => get_class($e),
+            ], 500);
+        }
+    }
 }

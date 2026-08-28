@@ -118,8 +118,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Administrator Only Endpoint Group
     Route::middleware('role:admin')->group(function () {
         
-        // System Settings Mutation
+        // System Settings & SMTP Diagnostic
         Route::post('/settings', [SystemSettingController::class, 'update']);
+        Route::post('/test-email', [SystemSettingController::class, 'testEmail']);
 
         // Event Management (Admin Mutations)
         Route::post('/events', [EventController::class, 'store']);
