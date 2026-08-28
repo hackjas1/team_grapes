@@ -793,7 +793,7 @@
             border: 1px solid rgba(255, 255, 255, 0.15);
         }
 
-        /* Desktop Left Hero Side: BSIS Logo on Left + TPC School Front Faded on Right */
+        /* Desktop Left Hero Side: Dark Blue Institutional Showcase with BSIS Logo Watermark */
         .admin-login-hero-side {
             background: linear-gradient(135deg, #063B5C 0%, #032134 100%);
             color: #FFFFFF;
@@ -806,38 +806,20 @@
             z-index: 1;
         }
 
-        /* Faded TPC School Front Picture on the Right */
-        .admin-login-hero-bg-building {
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            width: 78%;
-            background-image: url('/images/tpc-school-front.png');
-            background-size: cover;
-            background-position: center right;
-            background-repeat: no-repeat;
-            opacity: 0.38;
-            mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.5) 30%, rgba(0,0,0,1) 100%);
-            -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.5) 30%, rgba(0,0,0,1) 100%);
-            pointer-events: none;
-            z-index: 0;
-        }
-
         /* Faded Large BSIS Logo Watermark on the Left */
         .admin-login-hero-bg-logo {
             position: absolute;
             bottom: -30px;
             left: -40px;
-            width: 280px;
-            height: 280px;
+            width: 300px;
+            height: 300px;
             background-image: url('/images/bsis-logo.png');
             background-size: contain;
             background-repeat: no-repeat;
-            opacity: 0.08;
+            opacity: 0.10;
             pointer-events: none;
             z-index: 0;
-            filter: drop-shadow(0 0 20px rgba(53, 196, 232, 0.3));
+            filter: drop-shadow(0 0 24px rgba(53, 196, 232, 0.4));
         }
 
         /* Ambient Cyan Glow */
@@ -865,17 +847,17 @@
             gap: 14px;
             padding: 11px 14px;
             border-radius: 12px;
-            background: rgba(6, 59, 92, 0.45);
+            background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.12);
             margin-bottom: 10px;
             transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
         }
 
         .admin-login-feature-item:hover {
             transform: translateX(4px);
-            background: rgba(6, 59, 92, 0.65);
+            background: rgba(255, 255, 255, 0.14);
             border-color: rgba(53, 196, 232, 0.4);
         }
 
@@ -893,12 +875,48 @@
             box-shadow: 0 0 12px rgba(53, 196, 232, 0.25);
         }
 
+        /* Right Form Side: TPC School Front Picture on the Back of the White Background */
         .admin-login-form-side {
             padding: 44px 40px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             background: #FFFFFF;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .admin-login-form-bg-building {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('/images/tpc-school-front.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0.18;
+            pointer-events: none;
+            z-index: 0;
+            filter: saturate(1.15);
+        }
+
+        .admin-login-form-bg-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, rgba(255, 255, 255, 0.94) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .admin-login-form-content {
+            position: relative;
+            z-index: 2;
         }
 
         /* Mobile-Only Blended Hero Banner (< 992px) */
@@ -911,23 +929,6 @@
             padding: 22px 20px;
             color: #FFFFFF;
             margin: -32px -24px 22px -24px;
-        }
-
-        .admin-login-mobile-bg-building {
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            width: 65%;
-            background-image: url('/images/tpc-school-front.png');
-            background-size: cover;
-            background-position: center right;
-            background-repeat: no-repeat;
-            opacity: 0.38;
-            mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.6) 30%, rgba(0,0,0,1) 100%);
-            -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.6) 30%, rgba(0,0,0,1) 100%);
-            pointer-events: none;
-            z-index: 0;
         }
 
         .admin-login-mobile-content {
@@ -960,7 +961,8 @@
             padding-right: 48px !important;
             height: 48px;
             border-radius: 10px;
-            border: 1.5px solid #E2E8F0;
+            border: 1.5px solid #CBD5E1;
+            background-color: #FFFFFF !important;
             font-size: 0.92rem;
             transition: all 0.2s ease;
             position: relative;
@@ -1197,15 +1199,12 @@
             <div class="admin-login-wrapper">
                 <div class="admin-login-card-container">
                     <div class="row g-0">
-                        <!-- Desktop Left Only: Institutional Showcase with BSIS Logo (Left) & TPC School Front (Right) -->
+                        <!-- Desktop Left Only: Institutional Showcase with BSIS Logo (Left) & Features -->
                         <div class="col-lg-6 d-none d-lg-flex admin-login-hero-side">
-                            <!-- Background Layer 1: Faded TPC School Front on the Right -->
-                            <div class="admin-login-hero-bg-building"></div>
-                            
-                            <!-- Background Layer 2: Faded Large BSIS Logo Watermark on the Left -->
+                            <!-- Background Layer: Faded Large BSIS Logo Watermark on the Left -->
                             <div class="admin-login-hero-bg-logo"></div>
 
-                            <!-- Hero Content (Above Blended Background) -->
+                            <!-- Hero Content -->
                             <div class="admin-login-hero-content">
                                 <!-- Institutional Logo Pairing: BSIS Logo on the Left, TPC Logo on the Right -->
                                 <div class="d-flex align-items-center gap-3 mb-4">
@@ -1261,63 +1260,68 @@
                             </div>
                         </div>
 
-                        <!-- Right on Desktop, Full Card on Mobile: Sleek Sign In Form -->
+                        <!-- Right on Desktop, Full Card on Mobile: Sleek Sign In Form with TPC School Front in Background -->
                         <div class="col-12 col-lg-6 admin-login-form-side">
-                            <!-- Mobile-Only Blended Institutional Header Banner (< 992px) -->
-                            <div class="admin-login-mobile-banner">
-                                <div class="admin-login-mobile-bg-building"></div>
-                                <div class="admin-login-mobile-content d-flex align-items-center gap-3">
-                                    <img src="/images/bsis-logo.png" alt="BSIS Logo" style="height: 48px; width: 48px; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3)); flex-shrink: 0;">
-                                    <img src="/images/tpc-logo.png" alt="Talibon Polytechnic College" style="height: 46px; width: 46px; border-radius: 50%; border: 2px solid rgba(53, 196, 232, 0.6); background: #fff; padding: 2px; flex-shrink: 0;">
-                                    <div class="text-start">
-                                        <div class="fw-bold text-white fs-6" style="line-height: 1.25; font-size: 0.95rem !important;">TALIBON POLYTECHNIC COLLEGE</div>
-                                        <div style="color: var(--color-accent); font-size: 0.76rem; font-weight: 700; letter-spacing: 0.5px;">BSIS DEPARTMENT &bull; CONTROL CENTER</div>
-                                    </div>
-                                </div>
-                            </div>
+                            <!-- Background Layer: Faded TPC School Front Picture on the White Form Side -->
+                            <div class="admin-login-form-bg-building"></div>
+                            <div class="admin-login-form-bg-overlay"></div>
 
-                            <div class="mb-4">
-                                <div class="d-inline-flex align-items-center gap-2 px-2.5 py-1 rounded-pill bg-primary bg-opacity-10 text-primary small fw-bold mb-2" style="font-size: 0.78rem;">
-                                    <i class="bi bi-shield-lock-fill"></i> Authorized Personnel Only
-                                </div>
-                                <h4 class="fw-bold text-dark mb-1" style="letter-spacing: -0.02em;">Faculty & Staff Login</h4>
-                                <p class="text-muted small mb-0">Enter your institutional credentials to access the management dashboard.</p>
-                            </div>
-
-                            <div id="admin-login-alert" class="alert alert-danger d-none" style="font-size: 0.88rem; border-radius: 10px;"></div>
-
-                            <form id="admin-login-form" onsubmit="return false;" autocomplete="off">
-                                <div class="mb-3 text-start">
-                                    <label class="bsis-form-label fw-semibold text-dark small mb-1">Institutional Email</label>
-                                    <div class="admin-input-group">
-                                        <input type="text" id="admin-login-identifier" class="form-control" placeholder="e.g. admin@tpc-bsis.online or faculty@tpc.edu.ph" required onkeydown="if(event.key==='Enter') AdminApp.handleAdminLogin(event)">
-                                        <i class="bi bi-envelope-fill input-icon"></i>
+                            <div class="admin-login-form-content">
+                                <!-- Mobile-Only Blended Institutional Header Banner (< 992px) -->
+                                <div class="admin-login-mobile-banner">
+                                    <div class="admin-login-mobile-content d-flex align-items-center gap-3">
+                                        <img src="/images/bsis-logo.png" alt="BSIS Logo" style="height: 48px; width: 48px; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3)); flex-shrink: 0;">
+                                        <img src="/images/tpc-logo.png" alt="Talibon Polytechnic College" style="height: 46px; width: 46px; border-radius: 50%; border: 2px solid rgba(53, 196, 232, 0.6); background: #fff; padding: 2px; flex-shrink: 0;">
+                                        <div class="text-start">
+                                            <div class="fw-bold text-white fs-6" style="line-height: 1.25; font-size: 0.95rem !important;">TALIBON POLYTECHNIC COLLEGE</div>
+                                            <div style="color: var(--color-accent); font-size: 0.76rem; font-weight: 700; letter-spacing: 0.5px;">BSIS DEPARTMENT &bull; CONTROL CENTER</div>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div class="mb-4 text-start">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <label class="bsis-form-label fw-semibold text-dark small mb-0">Password</label>
-                                        <a href="javascript:void(0)" onclick="AdminApp.openForgotPasswordModal()" class="text-decoration-none small text-primary fw-semibold" style="font-size: 0.8rem;">Forgot Password?</a>
+                                <div class="mb-4">
+                                    <div class="d-inline-flex align-items-center gap-2 px-2.5 py-1 rounded-pill bg-primary bg-opacity-10 text-primary small fw-bold mb-2" style="font-size: 0.78rem;">
+                                        <i class="bi bi-shield-lock-fill"></i> Authorized Personnel Only
                                     </div>
-                                    <div class="admin-input-group">
-                                        <input type="password" id="admin-login-password" class="form-control" placeholder="Enter your password" required onkeydown="if(event.key==='Enter') AdminApp.handleAdminLogin(event)">
-                                        <i class="bi bi-shield-lock-fill input-icon"></i>
-                                        <button class="password-toggle-btn" type="button" onclick="AdminApp.togglePasswordVisibility('admin-login-password', this)" title="Show / Hide Password" style="right: 14px;">
-                                            <i class="bi bi-eye"></i>
-                                        </button>
-                                    </div>
+                                    <h4 class="fw-bold text-dark mb-1" style="letter-spacing: -0.02em;">Faculty & Staff Login</h4>
+                                    <p class="text-muted small mb-0">Enter your institutional credentials to access the management dashboard.</p>
                                 </div>
 
-                                <button type="button" id="admin-login-btn" onclick="AdminApp.handleAdminLogin(event)" class="btn-admin-submit w-100">
-                                    <span>Sign In to Control Center</span>
-                                    <i class="bi bi-arrow-right-short fs-4"></i>
-                                </button>
-                            </form>
+                                <div id="admin-login-alert" class="alert alert-danger d-none" style="font-size: 0.88rem; border-radius: 10px;"></div>
 
-                            <div class="admin-login-footer">
-                                <div class="text-muted mb-1 fw-semibold">Talibon Polytechnic College &bull; BSIS Department</div>
-                                <div class="text-muted opacity-75" style="font-size: 0.74rem;">BSIS Attendance Monitoring System &bull; Version 1.0.0</div>
+                                <form id="admin-login-form" onsubmit="return false;" autocomplete="off">
+                                    <div class="mb-3 text-start">
+                                        <label class="bsis-form-label fw-semibold text-dark small mb-1">Institutional Email</label>
+                                        <div class="admin-input-group">
+                                            <input type="text" id="admin-login-identifier" class="form-control" placeholder="e.g. admin@tpc-bsis.online or faculty@tpc.edu.ph" required onkeydown="if(event.key==='Enter') AdminApp.handleAdminLogin(event)">
+                                            <i class="bi bi-envelope-fill input-icon"></i>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-4 text-start">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <label class="bsis-form-label fw-semibold text-dark small mb-0">Password</label>
+                                            <a href="javascript:void(0)" onclick="AdminApp.openForgotPasswordModal()" class="text-decoration-none small text-primary fw-semibold" style="font-size: 0.8rem;">Forgot Password?</a>
+                                        </div>
+                                        <div class="admin-input-group">
+                                            <input type="password" id="admin-login-password" class="form-control" placeholder="Enter your password" required onkeydown="if(event.key==='Enter') AdminApp.handleAdminLogin(event)">
+                                            <i class="bi bi-shield-lock-fill input-icon"></i>
+                                            <button class="password-toggle-btn" type="button" onclick="AdminApp.togglePasswordVisibility('admin-login-password', this)" title="Show / Hide Password" style="right: 14px;">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <button type="button" id="admin-login-btn" onclick="AdminApp.handleAdminLogin(event)" class="btn-admin-submit w-100">
+                                        <span>Sign In to Control Center</span>
+                                        <i class="bi bi-arrow-right-short fs-4"></i>
+                                    </button>
+                                </form>
+
+                                <div class="admin-login-footer">
+                                    <div class="text-muted mb-1 fw-semibold">Talibon Polytechnic College &bull; BSIS Department</div>
+                                    <div class="text-muted opacity-75" style="font-size: 0.74rem;">BSIS Attendance Monitoring System &bull; Version 1.0.0</div>
+                                </div>
                             </div>
                         </div>
                     </div>
