@@ -160,6 +160,29 @@ const AdminApp = {
         const user = StorageManager.getUser();
         const token = StorageManager.getToken();
 
+        if (hash.startsWith('#reset-password')) {
+            this.showView('view-login');
+            const queryString = hash.includes('?') ? hash.split('?')[1] : window.location.search.replace(/^\?/, '');
+            const urlParams = new URLSearchParams(queryString);
+            const tokenParam = urlParams.get('token');
+            const emailParam = urlParams.get('email');
+            if (tokenParam || emailParam) {
+                setTimeout(() => {
+                    const tokenInput = document.getElementById('admin-reset-token');
+                    const emailInput = document.getElementById('admin-forgot-email');
+                    if (tokenInput && tokenParam) tokenInput.value = decodeURIComponent(tokenParam);
+                    if (emailInput && emailParam) emailInput.value = decodeURIComponent(emailParam);
+                    this.toggleForgotStep(2);
+                    const modalEl = document.getElementById('modal-admin-forgot-password');
+                    if (modalEl) {
+                        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                        modal.show();
+                    }
+                }, 200);
+            }
+            return;
+        }
+
         // If unauthenticated or student role, show Admin Login View
         if (!token || !user || (user.role !== 'admin' && user.role !== 'event_staff')) {
             this.showView('view-login');
@@ -451,6 +474,184 @@ const AdminApp = {
         } else {
             input.type = 'password';
             if (icon) icon.className = 'bi bi-eye';
+        }
+    },
+
+    openForgotPasswordModal() {
+        const loginInput = document.getElementById('admin-login-identifier')?.value.trim() || '';
+        const emailInput = document.getElementById('admin-forgot-email');
+        if (emailInput && loginInput) emailInput.value = loginInput;
+        this.toggleForgotStep(1);
+        const modalEl = document.getElementById('modal-admin-forgot-password');
+        if (modalEl) {
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        }
+    },
+
+    toggleForgotStep(step) {
+        const step1 = document.getElementById('admin-forgot-step-1');
+        const step2 = document.getElementById('admin-forgot-step-2');
+        const alertBox = document.getElementById('admin-forgot-alert');
+        const successBox = document.getElementById('admin-forgot-success');
+        if (alertBox) alertBox.classList.add('d-none');
+        if (successBox) successBox.classList.add('d-none');
+
+        if (step === 1) {
+            if (step1) step1.classList.remove('d-none');
+            if (step2) step2.classList.add('d-none');
+        } else {
+            if (step1) step1.classList.add('d-none');
+            if (step2) step2.classList.remove('d-none');
+        }
+    },
+
+    async submitForgotPasswordRequest() {
+        const email = document.getElementById('admin-forgot-email')?.value.trim() || '';
+        const alertBox = document.getElementById('admin-forgot-alert');
+        const successBox = document.getElementById('admin-forgot-success');
+        const btn = document.getElementById('btn-admin-send-reset');
+
+        if (!email) {
+            if (alertBox) {
+                alertBox.innerText = 'Please enter your institutional faculty or admin email.';
+                alertBox.classList.remove('d-none');
+            }
+            return;
+        }
+
+        if (alertBox) alertBox.classList.add('d-none');
+        if (successBox) successBox.classList.add('d-none');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Sending Token...';
+        }
+
+        const res = await StorageManager.apiRequest('/api/auth/forgot-password', {
+            method: 'POST',
+            body: JSON.stringify({ email: email })
+        });
+
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-send-fill me-1"></i> Send Password Reset Code';
+        }
+
+        if (res.ok && res.data && res.data.success) {
+            if (successBox) {
+                successBox.innerText = res.data.message || 'Password reset token has been dispatched to your email.';
+                successBox.classList.remove('d-none');
+            }
+            setTimeout(() => {
+                this.toggleForgotStep(2);
+            }, 1200);
+        } else {
+            const errorMsg = res.data?.message || 'Failed to dispatch reset token. Please try again.';
+            if (alertBox) {
+                alertBox.innerText = errorMsg;
+                alertBox.classList.remove('d-none');
+            }
+        }
+    },
+
+    validateResetPasswordLive() {
+        const pass = document.getElementById('admin-reset-new-password')?.value || '';
+        const passConf = document.getElementById('admin-reset-confirm-password')?.value || '';
+
+        const hasLen = pass.length >= 8;
+        const hasCase = /[a-z]/.test(pass) && /[A-Z]/.test(pass);
+        const hasSym = /[0-9]/.test(pass) && /[^A-Za-z0-9]/.test(pass);
+        const hasMatch = pass.length > 0 && pass === passConf;
+
+        const updateRule = (elId, valid, text) => {
+            const el = document.getElementById(elId);
+            if (!el) return;
+            if (valid) {
+                el.className = 'text-success fw-semibold';
+                el.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i> ${text}`;
+            } else {
+                el.className = 'text-danger';
+                el.innerHTML = `<i class="bi bi-x-circle-fill me-1"></i> ${text}`;
+            }
+        };
+
+        updateRule('admin-pw-rule-len', hasLen, 'Minimum 8 characters');
+        updateRule('admin-pw-rule-case', hasCase, 'Uppercase & lowercase letters');
+        updateRule('admin-pw-rule-sym', hasSym, 'Number and special symbol (!@#$%^...)');
+        updateRule('admin-pw-rule-match', hasMatch, hasMatch ? 'Passwords match' : 'Passwords must match');
+
+        return hasLen && hasCase && hasSym && hasMatch;
+    },
+
+    async submitPasswordResetExecution() {
+        const email = document.getElementById('admin-forgot-email')?.value.trim() || document.getElementById('admin-login-identifier')?.value.trim() || '';
+        const token = document.getElementById('admin-reset-token')?.value.trim() || '';
+        const password = document.getElementById('admin-reset-new-password')?.value || '';
+        const password_confirmation = document.getElementById('admin-reset-confirm-password')?.value || '';
+        const alertBox = document.getElementById('admin-forgot-alert');
+        const successBox = document.getElementById('admin-forgot-success');
+        const btn = document.getElementById('btn-admin-confirm-reset');
+
+        if (!token) {
+            if (alertBox) {
+                alertBox.innerText = 'Please enter or paste the 64-character token from your email.';
+                alertBox.classList.remove('d-none');
+            }
+            return;
+        }
+
+        if (!this.validateResetPasswordLive()) {
+            if (alertBox) {
+                alertBox.innerText = 'Please ensure your new password satisfies all requirements and passwords match.';
+                alertBox.classList.remove('d-none');
+            }
+            return;
+        }
+
+        if (alertBox) alertBox.classList.add('d-none');
+        if (successBox) successBox.classList.add('d-none');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Resetting Password...';
+        }
+
+        const res = await StorageManager.apiRequest('/api/auth/reset-password', {
+            method: 'POST',
+            body: JSON.stringify({
+                email: email,
+                token: token,
+                password: password,
+                password_confirmation: password_confirmation
+            })
+        });
+
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> Confirm & Reset Password';
+        }
+
+        if (res.ok && res.data && res.data.success) {
+            if (successBox) {
+                successBox.innerText = 'Password reset successfully! Redirecting to login...';
+                successBox.classList.remove('d-none');
+            }
+            setTimeout(() => {
+                const modalEl = document.getElementById('modal-admin-forgot-password');
+                if (modalEl) {
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) modal.hide();
+                }
+                const loginIdentifier = document.getElementById('admin-login-identifier');
+                const loginPassword = document.getElementById('admin-login-password');
+                if (loginIdentifier && email) loginIdentifier.value = email;
+                if (loginPassword) loginPassword.value = '';
+            }, 1800);
+        } else {
+            const errorMsg = res.data?.message || 'Invalid or expired reset token. Please request a new token.';
+            if (alertBox) {
+                alertBox.innerText = errorMsg;
+                alertBox.classList.remove('d-none');
+            }
         }
     },
 
@@ -1754,6 +1955,12 @@ const AdminApp = {
     },
 
     async editEvent(eventId) {
+        const detailsModalEl = document.getElementById('modal-view-event-details');
+        if (detailsModalEl) {
+            const detailsModal = bootstrap.Modal.getInstance(detailsModalEl);
+            if (detailsModal) detailsModal.hide();
+        }
+
         const res = await StorageManager.apiRequest(`/api/events/${eventId}`);
         if (!res.ok) {
             alert('Failed to load event details.');
@@ -1956,6 +2163,12 @@ const AdminApp = {
     },
 
     async activateEvent(eventId) {
+        const detailsModalEl = document.getElementById('modal-view-event-details');
+        if (detailsModalEl) {
+            const detailsModal = bootstrap.Modal.getInstance(detailsModalEl);
+            if (detailsModal) detailsModal.hide();
+        }
+
         this.showConfirm({
             title: 'Activate Event',
             message: 'Activate this event session for real-time dynamic QR code scanning?',
@@ -1976,6 +2189,12 @@ const AdminApp = {
     },
 
     completeEvent(eventId, eventTitle = '') {
+        const detailsModalEl = document.getElementById('modal-view-event-details');
+        if (detailsModalEl) {
+            const detailsModal = bootstrap.Modal.getInstance(detailsModalEl);
+            if (detailsModal) detailsModal.hide();
+        }
+
         const modalEl = document.getElementById('modal-confirm-complete-event');
         if (!modalEl) return;
 
@@ -2081,6 +2300,12 @@ const AdminApp = {
     },
 
     async processEventAbsences(eventId) {
+        const detailsModalEl = document.getElementById('modal-view-event-details');
+        if (detailsModalEl) {
+            const detailsModal = bootstrap.Modal.getInstance(detailsModalEl);
+            if (detailsModal) detailsModal.hide();
+        }
+
         this.showConfirm({
             title: 'Re-Process Event Absences',
             message: 'Run absence processor now? Any eligible BSIS student without verified scans will be recorded as ABSENT with fines.',
@@ -2318,43 +2543,43 @@ const AdminApp = {
         if (windowsContainer) {
             if (isWhole) {
                 windowsContainer.innerHTML = `
-                    <div class="col-6">
+                    <div class="col-12 col-sm-6">
                         <div class="p-2 border rounded bg-white h-100 shadow-sm">
                             <span class="text-dark d-block small fw-bold mb-1"><i class="bi bi-sun-fill text-warning me-1"></i> AM Time-In</span>
-                            <div class="small">${fmtWindowRange(e.am_checkin_start_time, e.am_checkin_end_time)}</div>
+                            <div class="small text-truncate">${fmtWindowRange(e.am_checkin_start_time, e.am_checkin_end_time)}</div>
                         </div>
                     </div>
-                    <div class="col-6">
+                    <div class="col-12 col-sm-6">
                         <div class="p-2 border rounded bg-white h-100 shadow-sm">
                             <span class="text-dark d-block small fw-bold mb-1"><i class="bi bi-box-arrow-right text-info me-1"></i> AM Time-Out</span>
-                            <div class="small">${fmtWindowRange(e.am_checkout_start_time, e.am_checkout_end_time)}</div>
+                            <div class="small text-truncate">${fmtWindowRange(e.am_checkout_start_time, e.am_checkout_end_time)}</div>
                         </div>
                     </div>
-                    <div class="col-6">
+                    <div class="col-12 col-sm-6">
                         <div class="p-2 border rounded bg-white h-100 shadow-sm">
                             <span class="text-dark d-block small fw-bold mb-1"><i class="bi bi-cloud-sun-fill text-primary me-1"></i> PM Time-In</span>
-                            <div class="small">${fmtWindowRange(e.pm_checkin_start_time, e.pm_checkin_end_time)}</div>
+                            <div class="small text-truncate">${fmtWindowRange(e.pm_checkin_start_time, e.pm_checkin_end_time)}</div>
                         </div>
                     </div>
-                    <div class="col-6">
+                    <div class="col-12 col-sm-6">
                         <div class="p-2 border rounded bg-white h-100 shadow-sm">
                             <span class="text-dark d-block small fw-bold mb-1"><i class="bi bi-check2-all text-success me-1"></i> PM Time-Out</span>
-                            <div class="small">${fmtWindowRange(e.pm_checkout_start_time, e.pm_checkout_end_time)}</div>
+                            <div class="small text-truncate">${fmtWindowRange(e.pm_checkout_start_time, e.pm_checkout_end_time)}</div>
                         </div>
                     </div>
                 `;
             } else {
                 windowsContainer.innerHTML = `
-                    <div class="col-6">
+                    <div class="col-12 col-sm-6">
                         <div class="p-2 border rounded bg-white h-100 shadow-sm">
                             <span class="text-dark d-block small fw-bold mb-1"><i class="bi bi-box-arrow-in-right text-success me-1"></i> Time-In Window</span>
-                            <div class="small">${fmtWindowRange(e.checkin_start_time, e.checkin_end_time)}</div>
+                            <div class="small text-truncate">${fmtWindowRange(e.checkin_start_time, e.checkin_end_time)}</div>
                         </div>
                     </div>
-                    <div class="col-6">
+                    <div class="col-12 col-sm-6">
                         <div class="p-2 border rounded bg-white h-100 shadow-sm">
                             <span class="text-dark d-block small fw-bold mb-1"><i class="bi bi-box-arrow-right text-info me-1"></i> Time-Out Window</span>
-                            <div class="small">${fmtWindowRange(e.checkout_start_time, e.checkout_end_time)}</div>
+                            <div class="small text-truncate">${fmtWindowRange(e.checkout_start_time, e.checkout_end_time)}</div>
                         </div>
                     </div>
                 `;
@@ -2376,13 +2601,19 @@ const AdminApp = {
         const actionsBar = document.getElementById('detail-event-actions-bar');
         if (actionsBar) {
             let actionsHtml = '';
+            const titleEscaped = (e.title || '').replace(/'/g, "\\'");
             if (e.status === 'active') {
-                actionsHtml += `<button type="button" onclick="AdminApp.openEventQrDisplay(${e.id})" class="btn btn-bsis-info btn-sm fw-bold text-white d-inline-flex align-items-center justify-content-center text-nowrap flex-grow-1 flex-sm-grow-0 py-2 px-3" style="min-height: 38px; font-size: 0.82rem;"><i class="bi bi-qr-code me-1"></i> Dynamic QR</button>`;
-                actionsHtml += `<button type="button" onclick="AdminApp.completeEvent(${e.id}, '${e.title.replace(/'/g, "\\'")}')" class="btn btn-warning btn-sm fw-bold d-inline-flex align-items-center justify-content-center text-nowrap flex-grow-1 flex-sm-grow-0 py-2 px-3" style="min-height: 38px; font-size: 0.82rem;"><i class="bi bi-flag-fill me-1"></i> Conclude Event</button>`;
+                actionsHtml += `<button type="button" onclick="AdminApp.openEventQrDisplay(${e.id})" class="btn btn-bsis-info text-white event-detail-action-btn"><i class="bi bi-qr-code"></i> Dynamic QR</button>`;
+                actionsHtml += `<button type="button" onclick="AdminApp.jumpToEventReports(${e.id})" class="btn btn-bsis-primary event-detail-action-btn"><i class="bi bi-file-earmark-bar-graph"></i> Reports & Roster</button>`;
+                actionsHtml += `<button type="button" onclick="AdminApp.completeEvent(${e.id}, '${titleEscaped}')" class="btn btn-warning text-dark event-detail-action-btn"><i class="bi bi-flag-fill"></i> Conclude Event</button>`;
             } else if (e.status === 'upcoming' || e.status === 'draft') {
-                actionsHtml += `<button type="button" onclick="AdminApp.activateEvent(${e.id})" class="btn btn-success btn-sm fw-bold d-inline-flex align-items-center justify-content-center text-nowrap flex-grow-1 flex-sm-grow-0 py-2 px-3" style="min-height: 38px; font-size: 0.82rem;"><i class="bi bi-play-circle me-1"></i> Activate Event</button>`;
+                actionsHtml += `<button type="button" onclick="AdminApp.activateEvent(${e.id})" class="btn btn-success text-white event-detail-action-btn"><i class="bi bi-play-circle-fill"></i> Activate Event</button>`;
+                actionsHtml += `<button type="button" onclick="AdminApp.editEvent(${e.id})" class="btn btn-outline-primary event-detail-action-btn"><i class="bi bi-pencil-square"></i> Edit Event</button>`;
+                actionsHtml += `<button type="button" onclick="AdminApp.jumpToEventReports(${e.id})" class="btn btn-bsis-primary event-detail-action-btn"><i class="bi bi-file-earmark-bar-graph"></i> Reports & Roster</button>`;
+            } else if (e.status === 'completed') {
+                actionsHtml += `<button type="button" onclick="AdminApp.jumpToEventReports(${e.id})" class="btn btn-bsis-primary event-detail-action-btn"><i class="bi bi-file-earmark-bar-graph"></i> Reports & Roster</button>`;
+                actionsHtml += `<button type="button" onclick="AdminApp.processEventAbsences(${e.id})" class="btn btn-outline-secondary event-detail-action-btn"><i class="bi bi-calculator"></i> Re-Process Fines</button>`;
             }
-            actionsHtml += `<button type="button" onclick="AdminApp.jumpToEventReports(${e.id})" class="btn btn-bsis-primary btn-sm fw-bold d-inline-flex align-items-center justify-content-center text-nowrap flex-grow-1 flex-sm-grow-0 py-2 px-3" style="min-height: 38px; font-size: 0.82rem;"><i class="bi bi-file-earmark-bar-graph me-1"></i> Reports & Roster</button>`;
             actionsBar.innerHTML = actionsHtml;
         }
 
@@ -3588,6 +3819,11 @@ const AdminApp = {
                                             <i class="bi bi-pencil-square text-primary me-2"></i> Edit Account
                                         </a>
                                     </li>
+                                    <li>
+                                        <a class="dropdown-item py-2 text-info fw-semibold" href="javascript:void(0)" onclick="AdminApp.promptAdminResetUserPassword(${u.id}, '${safeName}', '${safeEmail}', '${u.role || 'student'}')">
+                                            <i class="bi bi-key-fill text-info me-2"></i> Reset Password (Unli)
+                                        </a>
+                                    </li>
                                     ${isStudent ? `
                                     <li>
                                         <a class="dropdown-item py-2 text-warning fw-semibold" href="javascript:void(0)" onclick="AdminApp.resetUserDevice(${u.id})">
@@ -3937,6 +4173,108 @@ const AdminApp = {
                 }
             }
         });
+    },
+
+    promptAdminResetUserPassword(userId, userName, userEmail, role = 'student') {
+        const modalEl = document.getElementById('modal-admin-unli-password-reset');
+        if (!modalEl) return;
+
+        document.getElementById('admin-unli-user-id').value = userId;
+        document.getElementById('admin-unli-user-name').innerText = userName || 'Student Account';
+        document.getElementById('admin-unli-user-email').innerText = userEmail || 'N/A';
+        const roleEl = document.getElementById('admin-unli-user-role');
+        if (roleEl) {
+            roleEl.innerText = (role || 'student').toUpperCase();
+            roleEl.className = `badge ${role === 'admin' ? 'bg-danger' : (role === 'event_staff' ? 'bg-info text-dark' : 'bg-primary')}`;
+        }
+
+        document.getElementById('admin-unli-password-input').value = '';
+        document.getElementById('admin-unli-alert').classList.add('d-none');
+        document.getElementById('admin-unli-form-container').classList.remove('d-none');
+        document.getElementById('admin-unli-success-container').classList.add('d-none');
+
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
+    },
+
+    generateRandomAdminPassword() {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%&*';
+        let pass = 'Tpc#';
+        for (let i = 0; i < 6; i++) {
+            pass += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        pass += '!';
+        const input = document.getElementById('admin-unli-password-input');
+        if (input) {
+            input.value = pass;
+            this.showToast('Generated secure temporary password: ' + pass, 'info');
+        }
+    },
+
+    copyUnliPasswordInput() {
+        const val = document.getElementById('admin-unli-password-input')?.value;
+        if (!val) {
+            this.generateRandomAdminPassword();
+            return;
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(val).then(() => {
+                this.showToast('Password copied to clipboard!', 'success');
+            });
+        }
+    },
+
+    copyUnliResultPassword() {
+        const val = document.getElementById('admin-unli-result-password')?.innerText;
+        if (val && navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(val).then(() => {
+                this.showToast('Password copied to clipboard!', 'success');
+            });
+        }
+    },
+
+    async submitAdminUnliPasswordReset() {
+        const userId = document.getElementById('admin-unli-user-id')?.value;
+        const customPass = document.getElementById('admin-unli-password-input')?.value.trim();
+        const sendEmail = document.getElementById('admin-unli-send-email')?.checked;
+        const alertBox = document.getElementById('admin-unli-alert');
+        const btn = document.getElementById('btn-admin-submit-unli-reset');
+
+        if (!userId) return;
+
+        if (alertBox) alertBox.classList.add('d-none');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Applying Reset...';
+        }
+
+        const res = await StorageManager.apiRequest(`/api/users/${userId}/reset-password`, {
+            method: 'POST',
+            body: JSON.stringify({
+                new_password: customPass || undefined,
+                send_email_notification: sendEmail
+            })
+        });
+
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> Apply Administrator Reset';
+        }
+
+        if (res.ok && res.data && res.data.success) {
+            const assignedPass = res.data.data.new_password;
+            document.getElementById('admin-unli-form-container').classList.add('d-none');
+            document.getElementById('admin-unli-result-password').innerText = assignedPass;
+            document.getElementById('admin-unli-success-container').classList.remove('d-none');
+            this.showToast('Password reset successfully by administrator!', 'success');
+            this.loadUsers();
+        } else {
+            const errorMsg = res.data?.message || 'Failed to reset user password.';
+            if (alertBox) {
+                alertBox.innerText = errorMsg;
+                alertBox.classList.remove('d-none');
+            }
+        }
     },
 
     // 6. DEVICE RESET AUDIT LOGS & HISTORY

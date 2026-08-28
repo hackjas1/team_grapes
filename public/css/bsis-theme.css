@@ -2266,4 +2266,147 @@ tbody tr:hover td.sticky-col-event,
     gap: 6px;
 }
 
+/* ==========================================================================
+   Event Details Modal - Multi-Device (Mobile, Tablet, Desktop) Action Bar
+   ========================================================================== */
+.event-detail-actions-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.event-detail-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    padding: 8px 14px;
+    min-height: 40px;
+    border-radius: 8px;
+    transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    text-decoration: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.event-detail-action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.event-detail-action-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.event-detail-btn-close {
+    border-radius: 8px;
+    transition: all 0.18s ease;
+}
+
+/* Mobile Screens (< 576px) */
+@media (max-width: 575.98px) {
+    .event-detail-actions-container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        width: 100%;
+        margin-bottom: 2px;
+    }
+
+    .event-detail-actions-container .event-detail-action-btn {
+        width: 100%;
+        min-height: 42px;
+        font-size: 0.78rem;
+        padding: 8px 8px;
+        white-space: normal;
+        text-align: center;
+        flex: 1 1 auto;
+    }
+
+    /* When there are an odd number of buttons (e.g. 3 buttons), make the last button span full 2 columns */
+    .event-detail-actions-container .event-detail-action-btn:last-child:nth-child(odd) {
+        grid-column: span 2;
+    }
+
+    .event-detail-btn-close {
+        width: 100%;
+        min-height: 42px;
+        font-size: 0.84rem;
+    }
+}
+
+/* Small Tablets / Large Phones / Foldables (576px - 767.98px) */
+@media (min-width: 576px) and (max-width: 767.98px) {
+    .event-detail-actions-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .event-detail-actions-container .event-detail-action-btn {
+        flex: 1 1 calc(50% - 8px);
+        min-height: 40px;
+        font-size: 0.82rem;
+        padding: 8px 12px;
+        white-space: normal;
+        text-align: center;
+    }
+
+    .event-detail-actions-container .event-detail-action-btn:last-child:nth-child(odd) {
+        flex: 1 1 100%;
+    }
+
+    .event-detail-btn-close {
+        width: 100%;
+        min-height: 40px;
+    }
+}
+
+/* Tablets in Portrait / Landscape (768px - 991.98px) */
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .event-detail-actions-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 8px;
+        max-width: 100%;
+    }
+
+    .event-detail-actions-container .event-detail-action-btn {
+        flex: 0 1 auto;
+        min-height: 38px;
+        font-size: 0.82rem;
+        padding: 8px 14px;
+        white-space: nowrap;
+    }
+}
+
+/* Desktop Screens (>= 992px) */
+@media (min-width: 992px) {
+    .event-detail-actions-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 8px;
+        width: auto;
+    }
+
+    .event-detail-actions-container .event-detail-action-btn {
+        flex: 0 0 auto;
+        min-height: 38px;
+        font-size: 0.82rem;
+        padding: 8px 15px;
+    }
+}
+
+
 

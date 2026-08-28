@@ -13,10 +13,14 @@ class PasswordResetMail extends Mailable
     use Queueable, SerializesModels;
 
     public string $token;
+    public ?\App\Models\User $user;
+    public string $resetUrl;
 
-    public function __construct(string $token)
+    public function __construct(string $token, ?\App\Models\User $user = null, ?string $resetUrl = null)
     {
         $this->token = $token;
+        $this->user = $user;
+        $this->resetUrl = $resetUrl ?? (config('app.url') . ($user && $user->role === 'student' ? '/student#reset-password' : '/admin#reset-password') . '?token=' . urlencode($token) . '&email=' . urlencode($user ? $user->email : ''));
     }
 
     public function envelope(): Envelope

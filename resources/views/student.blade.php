@@ -477,6 +477,98 @@
                                 </button>
                             </div>
                         </div>
+        <!-- ==========================================
+             VIEW 3: SECURE STUDENT PASSWORD RESET
+             ========================================== -->
+        <section id="view-reset-password" class="app-view d-none">
+            <div class="row justify-content-center py-2">
+                <div class="col-12 col-md-6 col-lg-5">
+                    <div class="bsis-card p-4 shadow">
+                        <div class="text-center mb-3">
+                            <div class="d-flex justify-content-center align-items-center gap-3 mb-2">
+                                <img src="/images/tpc-logo.png" alt="TPC Logo" style="height: 55px; border-radius: 50%;">
+                                <img src="/images/bsis-logo.png" alt="BSIS Logo" style="height: 55px;">
+                            </div>
+                            <h4 class="fw-bold text-primary mb-1">Student Password Reset</h4>
+                            <p class="text-muted small mb-0">Talibon Polytechnic College &bull; BSIS Portal</p>
+                        </div>
+
+                        <div id="student-reset-alert" class="alert alert-danger d-none" style="font-size: 0.88rem; border-radius: 10px;"></div>
+                        <div id="student-reset-success-alert" class="alert alert-success d-none" style="font-size: 0.88rem; border-radius: 10px;"></div>
+
+                        <form id="student-reset-password-form" onsubmit="StudentPWA.handleCompletePasswordReset(event)">
+                            <!-- Email or Student ID -->
+                            <div class="mb-3">
+                                <label class="bsis-form-label fw-bold small text-dark">Student ID or Institutional Email</label>
+                                <input type="text" id="student-reset-identifier" class="form-control" placeholder="e.g. 2024-00001 or student@tpc.edu.ph" required>
+                            </div>
+
+                            <!-- Token -->
+                            <div class="mb-3">
+                                <label class="bsis-form-label fw-bold small text-dark">Password Reset Token</label>
+                                <input type="text" id="student-reset-token-input" class="form-control font-monospace" placeholder="Paste 64-character token from email" style="font-size: 0.84rem;" required>
+                            </div>
+
+                            <!-- New Password -->
+                            <div class="mb-3">
+                                <label class="bsis-form-label fw-bold small text-dark">New Password</label>
+                                <div class="password-input-wrapper">
+                                    <input type="password" id="student-reset-password" class="form-control" placeholder="Enter secure password" oninput="StudentPWA.validateStudentResetPasswordLive()" required>
+                                    <button class="password-toggle-btn" type="button" onclick="StudentPWA.togglePasswordVisibility('student-reset-password', this)" title="Show / Hide Password">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Confirm Password -->
+                            <div class="mb-3">
+                                <label class="bsis-form-label fw-bold small text-dark">Confirm New Password</label>
+                                <div class="password-input-wrapper">
+                                    <input type="password" id="student-reset-password-confirm" class="form-control" placeholder="Re-enter new password" oninput="StudentPWA.validateStudentResetPasswordLive()" required>
+                                    <button class="password-toggle-btn" type="button" onclick="StudentPWA.togglePasswordVisibility('student-reset-password-confirm', this)" title="Show / Hide Password">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Live Password Requirements Checklist -->
+                            <div class="p-3 mb-3 bg-light rounded border" style="font-size: 0.82rem;">
+                                <div class="fw-bold mb-2 text-dark"><i class="bi bi-shield-check text-primary"></i> Password Requirements:</div>
+                                <div class="d-flex flex-column gap-1">
+                                    <div id="student-reset-rule-len" class="text-danger"><i class="bi bi-x-circle-fill me-1"></i> Minimum 8 characters</div>
+                                    <div id="student-reset-rule-lower" class="text-danger"><i class="bi bi-x-circle-fill me-1"></i> At least one lowercase letter (a-z)</div>
+                                    <div id="student-reset-rule-upper" class="text-danger"><i class="bi bi-x-circle-fill me-1"></i> At least one uppercase letter (A-Z)</div>
+                                    <div id="student-reset-rule-num" class="text-danger"><i class="bi bi-x-circle-fill me-1"></i> At least one number (0-9)</div>
+                                    <div id="student-reset-rule-sym" class="text-danger"><i class="bi bi-x-circle-fill me-1"></i> At least one special symbol (!@#$%^&*...)</div>
+                                    <div id="student-reset-rule-match" class="text-danger"><i class="bi bi-x-circle-fill me-1"></i> Passwords must match</div>
+                                </div>
+                            </div>
+
+                            <button type="submit" id="student-reset-submit-btn" class="btn btn-primary w-100 py-2 fw-bold" style="background-color: var(--bsis-navy); border-color: var(--bsis-navy); border-radius: 10px;">
+                                Confirm & Update Password
+                            </button>
+                        </form>
+
+                        <!-- Reset Success Card -->
+                        <div id="student-reset-success-card" class="d-none text-center pt-2">
+                            <div class="mb-3">
+                                <i class="bi bi-check-circle-fill text-success" style="font-size: 3.5rem;"></i>
+                            </div>
+                            <h4 class="fw-bold text-dark mb-1">Password Reset Successful! 🎉</h4>
+                            <p class="text-muted small mb-3">Your password has been updated. Your phone device binding remains active.</p>
+
+                            <div class="p-3 bg-light rounded-3 border text-start mb-4" style="border-left: 4px solid var(--bsis-cyan) !important;">
+                                <h6 class="fw-bold text-primary mb-1"><i class="bi bi-phone-fill me-1"></i> Sign In to TPC Mobile App</h6>
+                                <p class="text-muted small mb-0" style="line-height: 1.45;">
+                                    You can now open the <strong>TPC Mobile App</strong> on your registered smartphone and sign in with your new password.
+                                </p>
+                            </div>
+
+                            <a href="/download/app" class="btn-download-apk w-100 justify-content-center">
+                                <i class="bi bi-android2 fs-4"></i>
+                                <span>Open or Download Mobile App (APK)</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -557,6 +649,84 @@
                     </div>
                     <div class="modal-footer border-0 pt-0 pb-4 justify-content-center">
                         <button type="button" class="btn btn-primary px-4 fw-bold" style="background-color: #063B5C; border-color: #063B5C; border-radius: 10px;" data-bs-dismiss="modal">Got It, Thanks!</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: STUDENT VIEW EVENT DETAILS -->
+        <div class="modal fade" id="modal-student-event-details" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+                    <div class="modal-header text-white py-3 px-3 px-sm-4" style="background: linear-gradient(135deg, #063B5C 0%, #032134 100%);">
+                        <div class="d-flex align-items-center gap-2 gap-sm-3 min-w-0">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(53, 196, 232, 0.2); color: #35C4E8; font-size: 1.2rem;">
+                                <i class="bi bi-calendar2-event-fill"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <h5 class="modal-title fw-bold mb-0 text-white text-truncate" id="stu-detail-event-title" style="font-size: 1.05rem;">Event Title</h5>
+                                <small class="text-light d-block" style="opacity: 0.85; font-size: 0.78rem;">Session Scanning Windows & Venue Geofence</small>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white flex-shrink-0" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-3 p-sm-4">
+                        <!-- Badges -->
+                        <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+                            <span id="stu-detail-status-badge" class="bsis-badge bsis-badge-success">ACTIVE</span>
+                            <span id="stu-detail-audience-badge" class="badge bg-primary px-2 py-1" style="font-size: 0.8rem;">
+                                <i class="bi bi-people-fill"></i> All BSIS Students
+                            </span>
+                            <span id="stu-detail-window-badge" class="badge bg-light text-secondary border px-2 py-1" style="font-size: 0.8rem;">
+                                <i class="bi bi-clock-history"></i> Window: Open
+                            </span>
+                        </div>
+
+                        <!-- Schedule & Fine Info -->
+                        <div class="card p-3 mb-3 border-0 bg-light" style="border-radius: 12px;">
+                            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                                <h6 class="fw-bold text-primary mb-0" style="font-size: 0.90rem;"><i class="bi bi-clock-fill me-1"></i> Attendance Session Scanning Windows</h6>
+                                <span id="stu-detail-session-badge" class="badge bg-white text-dark border text-wrap text-start" style="font-size: 0.74rem;">2 SCANS</span>
+                            </div>
+                            <div class="row g-2 small mb-3">
+                                <div class="col-12 col-sm-6">
+                                    <span class="text-muted d-block" style="font-size: 0.78rem;">Overall Event Duration:</span>
+                                    <strong id="stu-detail-schedule" class="text-dark" style="font-size: 0.84rem;">Loading...</strong>
+                                </div>
+                                <div class="col-12 col-sm-6">
+                                    <span class="text-muted d-block" style="font-size: 0.78rem;">Late / Missed Fine Policy:</span>
+                                    <strong id="stu-detail-fine" class="text-danger" style="font-size: 0.84rem;">₱0.00</strong>
+                                </div>
+                            </div>
+                            <div id="stu-detail-windows-container" class="row g-2">
+                                <!-- Dynamic Windows Injected Here -->
+                            </div>
+                        </div>
+
+                        <!-- Geofence & Venue -->
+                        <div class="card p-3 mb-3 border-0 bg-light" style="border-radius: 12px;">
+                            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                                <h6 class="fw-bold text-primary mb-0" style="font-size: 0.90rem;"><i class="bi bi-geo-alt-fill me-1"></i> Venue & Geofence Location</h6>
+                                <span id="stu-detail-radius-badge" class="badge bg-info text-dark" style="font-size: 0.75rem;">50m Allowed Radius</span>
+                            </div>
+                            <p class="mb-2 small" id="stu-detail-venue-name" style="font-size: 0.84rem;"><strong>Talibon Polytechnic College</strong></p>
+                            <div id="stu-detail-map" style="height: 200px; border-radius: 8px; border: 1px solid #cbd5e1; z-index: 1;" class="mb-1"></div>
+                            <small class="text-muted" style="font-size: 0.75rem;"><i class="bi bi-info-circle"></i> Cyan circle indicates student attendance scanning geofence perimeter.</small>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="card p-3 border-0 bg-light" style="border-radius: 12px;">
+                            <h6 class="fw-bold text-primary mb-2" style="font-size: 0.90rem;"><i class="bi bi-card-text me-1"></i> Event Information & Notes</h6>
+                            <p class="small text-muted mb-0" id="stu-detail-desc" style="font-size: 0.84rem; line-height: 1.45;">No description provided.</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center gap-2 bg-light py-2 px-3 px-sm-4 border-top">
+                        <button type="button" class="btn btn-outline-secondary btn-sm fw-semibold order-last order-sm-first py-2 px-3 event-detail-btn-close" data-bs-dismiss="modal">
+                            <i class="bi bi-x-lg me-1"></i> Close
+                        </button>
+                        <div id="stu-detail-actions" class="d-flex flex-wrap gap-2 justify-content-stretch justify-content-sm-end">
+                            <!-- Actions injected via JS -->
+                        </div>
                     </div>
                 </div>
             </div>

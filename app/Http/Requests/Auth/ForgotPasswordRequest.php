@@ -14,7 +14,17 @@ class ForgotPasswordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'email' => ['nullable', 'string'],
+            'login' => ['nullable', 'string'],
         ];
+    }
+
+    public function withValidator($validator)
+    {
+        $validator->after(function ($v) {
+            if (empty($this->input('email')) && empty($this->input('login'))) {
+                $v->errors()->add('login', 'Please provide your institutional email address or student ID.');
+            }
+        });
     }
 }

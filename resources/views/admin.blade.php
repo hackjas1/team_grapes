@@ -1201,6 +1201,7 @@
                                 <div class="mb-4 text-start">
                                     <div class="d-flex justify-content-between align-items-center mb-1">
                                         <label class="bsis-form-label fw-semibold text-dark small mb-0">Password</label>
+                                        <a href="javascript:void(0)" onclick="AdminApp.openForgotPasswordModal()" class="text-decoration-none small text-primary fw-semibold" style="font-size: 0.8rem;">Forgot Password?</a>
                                     </div>
                                     <div class="admin-input-group">
                                         <input type="password" id="admin-login-password" class="form-control" placeholder="Enter your password" required onkeydown="if(event.key==='Enter') AdminApp.handleAdminLogin(event)">
@@ -3876,19 +3877,19 @@
     <div class="modal fade" id="modal-view-event-details" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content border-0 shadow-lg" style="border-radius: var(--radius-card); overflow: hidden;">
-                <div class="modal-header text-white py-3 px-4" style="background: linear-gradient(135deg, #063B5C 0%, #04253A 100%);">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; background: rgba(53, 196, 232, 0.2); color: #35C4E8; font-size: 1.25rem;">
+                <div class="modal-header text-white py-3 px-3 px-sm-4" style="background: linear-gradient(135deg, #063B5C 0%, #04253A 100%);">
+                    <div class="d-flex align-items-center gap-2 gap-sm-3 min-w-0">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(53, 196, 232, 0.2); color: #35C4E8; font-size: 1.2rem;">
                             <i class="bi bi-calendar2-event-fill"></i>
                         </div>
-                        <div>
-                            <h5 class="modal-title fw-bold mb-0 text-white" id="detail-event-title" style="font-size: 1.1rem; letter-spacing: -0.01em;">Event Title</h5>
-                            <small class="text-light" style="opacity: 0.85; font-size: 0.82rem;">Event Session Details & Attendance Overview</small>
+                        <div class="min-w-0">
+                            <h5 class="modal-title fw-bold mb-0 text-white text-truncate" id="detail-event-title" style="font-size: 1.05rem; letter-spacing: -0.01em;">Event Title</h5>
+                            <small class="text-light d-block" style="opacity: 0.85; font-size: 0.78rem;">Event Session Details & Attendance Overview</small>
                         </div>
                     </div>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close btn-close-white flex-shrink-0" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body p-4">
+                <div class="modal-body p-3 p-sm-4">
                     <!-- Status & Audience Badges -->
                     <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
                         <span id="detail-event-status-badge" class="bsis-badge bsis-badge-success">ACTIVE</span>
@@ -3901,29 +3902,29 @@
                     </div>
 
                     <!-- Statistics Summary Grid -->
-                    <div class="row g-2 mb-4 text-center">
+                    <div class="row g-2 mb-3 text-center">
                         <div class="col-6 col-md-3">
                             <div class="bsis-card p-2 bg-light border-0">
-                                <span class="text-muted small fw-bold d-block">TOTAL SCANNED</span>
-                                <h4 class="fw-bold text-primary mb-0" id="detail-stat-total">0</h4>
+                                <span class="text-muted small fw-bold d-block" style="font-size: 0.72rem;">TOTAL SCANNED</span>
+                                <h4 class="fw-bold text-primary mb-0" id="detail-stat-total" style="font-size: 1.35rem;">0</h4>
                             </div>
                         </div>
                         <div class="col-6 col-md-3">
                             <div class="bsis-card p-2 bg-light border-0">
-                                <span class="text-muted small fw-bold d-block">PRESENT</span>
-                                <h4 class="fw-bold text-success mb-0" id="detail-stat-present">0</h4>
+                                <span class="text-muted small fw-bold d-block" style="font-size: 0.72rem;">PRESENT</span>
+                                <h4 class="fw-bold text-success mb-0" id="detail-stat-present" style="font-size: 1.35rem;">0</h4>
                             </div>
                         </div>
                         <div class="col-6 col-md-3">
                             <div class="bsis-card p-2 bg-light border-0">
-                                <span class="text-muted small fw-bold d-block">LATE SCANS</span>
-                                <h4 class="fw-bold text-warning mb-0" id="detail-stat-late">0</h4>
+                                <span class="text-muted small fw-bold d-block" style="font-size: 0.72rem;">LATE SCANS</span>
+                                <h4 class="fw-bold text-warning mb-0" id="detail-stat-late" style="font-size: 1.35rem;">0</h4>
                             </div>
                         </div>
                         <div class="col-6 col-md-3">
                             <div class="bsis-card p-2 bg-light border-0">
-                                <span class="text-muted small fw-bold d-block">TOTAL FINES</span>
-                                <h4 class="fw-bold text-danger mb-0" id="detail-stat-fines">₱0.00</h4>
+                                <span class="text-muted small fw-bold d-block" style="font-size: 0.72rem;">TOTAL FINES</span>
+                                <h4 class="fw-bold text-danger mb-0" id="detail-stat-fines" style="font-size: 1.35rem;">₱0.00</h4>
                             </div>
                         </div>
                     </div>
@@ -3931,17 +3932,17 @@
                     <!-- Event Schedule & Session Scanning Windows Info -->
                     <div class="card p-3 mb-3 border-0 bg-light" style="border-radius: var(--radius-sm);">
                         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-                            <h6 class="fw-bold text-primary mb-0"><i class="bi bi-clock-fill me-1"></i> Attendance Session Scanning Windows</h6>
-                            <span id="detail-event-session-type-badge" class="badge bg-white text-dark border text-wrap text-start" style="font-size: 0.76rem; max-width: 100%;">WHOLE DAY (4 SCANS)</span>
+                            <h6 class="fw-bold text-primary mb-0" style="font-size: 0.90rem;"><i class="bi bi-clock-fill me-1"></i> Attendance Session Scanning Windows</h6>
+                            <span id="detail-event-session-type-badge" class="badge bg-white text-dark border text-wrap text-start" style="font-size: 0.74rem; max-width: 100%;">WHOLE DAY (4 SCANS)</span>
                         </div>
                         <div class="row g-2 small mb-3">
-                            <div class="col-md-6">
-                                <span class="text-muted d-block">Overall Event Duration:</span>
-                                <strong id="detail-event-schedule" class="text-dark">Loading...</strong>
+                            <div class="col-12 col-sm-6">
+                                <span class="text-muted d-block" style="font-size: 0.78rem;">Overall Event Duration:</span>
+                                <strong id="detail-event-schedule" class="text-dark" style="font-size: 0.84rem;">Loading...</strong>
                             </div>
-                            <div class="col-md-6">
-                                <span class="text-muted d-block">Late / Missed Fine:</span>
-                                <strong id="detail-event-fine" class="text-danger">₱0.00</strong>
+                            <div class="col-12 col-sm-6">
+                                <span class="text-muted d-block" style="font-size: 0.78rem;">Late / Missed Fine:</span>
+                                <strong id="detail-event-fine" class="text-danger" style="font-size: 0.84rem;">₱0.00</strong>
                             </div>
                         </div>
                         <div id="detail-event-windows-container" class="row g-2">
@@ -3952,38 +3953,225 @@
                     <!-- Venue & Geofence Map -->
                     <div class="card p-3 mb-3 border-0 bg-light" style="border-radius: var(--radius-sm);">
                         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-                            <h6 class="fw-bold text-primary mb-0"><i class="bi bi-geo-alt-fill me-1"></i> Venue & Geofence Location</h6>
-                            <span id="detail-event-radius-badge" class="badge bg-info text-dark">50m Allowed Radius</span>
+                            <h6 class="fw-bold text-primary mb-0" style="font-size: 0.90rem;"><i class="bi bi-geo-alt-fill me-1"></i> Venue & Geofence Location</h6>
+                            <span id="detail-event-radius-badge" class="badge bg-info text-dark" style="font-size: 0.75rem;">50m Allowed Radius</span>
                         </div>
-                        <p class="mb-2 small" id="detail-event-venue-name"><strong>Talibon Polytechnic College</strong></p>
+                        <p class="mb-2 small" id="detail-event-venue-name" style="font-size: 0.84rem;"><strong>Talibon Polytechnic College</strong></p>
                         
                         <!-- Map container -->
-                        <div id="detail-event-map" style="height: 220px; border-radius: 8px; border: 1px solid var(--color-border); z-index: 1;" class="mb-1"></div>
-                        <small class="text-muted"><i class="bi bi-info-circle"></i> Cyan circle indicates student attendance scanning geofence perimeter.</small>
+                        <div id="detail-event-map" style="height: 210px; border-radius: 8px; border: 1px solid var(--color-border); z-index: 1;" class="mb-1"></div>
+                        <small class="text-muted" style="font-size: 0.75rem;"><i class="bi bi-info-circle"></i> Cyan circle indicates student attendance scanning geofence perimeter.</small>
                     </div>
 
                     <!-- Description & Organization -->
                     <div class="card p-3 border-0 bg-light" style="border-radius: var(--radius-sm);">
-                        <h6 class="fw-bold text-primary mb-2"><i class="bi bi-card-text me-1"></i> Description & Organization</h6>
-                        <p class="small text-muted mb-3" id="detail-event-desc">No description provided.</p>
+                        <h6 class="fw-bold text-primary mb-2" style="font-size: 0.90rem;"><i class="bi bi-card-text me-1"></i> Description & Organization</h6>
+                        <p class="small text-muted mb-3" id="detail-event-desc" style="font-size: 0.84rem; line-height: 1.45;">No description provided.</p>
                         <div class="row g-2 small border-top pt-2">
-                            <div class="col-md-6">
-                                <span class="text-muted">Created By:</span>
-                                <strong id="detail-event-creator" class="d-block text-dark">System Admin</strong>
+                            <div class="col-12 col-sm-6">
+                                <span class="text-muted d-block" style="font-size: 0.78rem;">Created By:</span>
+                                <strong id="detail-event-creator" class="d-block text-dark" style="font-size: 0.84rem;">System Admin</strong>
                             </div>
-                            <div class="col-md-6">
-                                <span class="text-muted">Assigned Event Staff:</span>
-                                <strong id="detail-event-staff" class="d-block text-dark">All Staff</strong>
+                            <div class="col-12 col-sm-6">
+                                <span class="text-muted d-block" style="font-size: 0.78rem;">Assigned Event Staff:</span>
+                                <strong id="detail-event-staff" class="d-block text-dark" style="font-size: 0.84rem;">All Staff</strong>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center gap-2 bg-light py-2 px-3 px-sm-4">
-                    <button type="button" class="btn btn-bsis-outline btn-sm fw-semibold order-last order-sm-first py-2 px-3" data-bs-dismiss="modal" style="min-height: 38px; font-size: 0.82rem;">
+                <div class="modal-footer d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center gap-2 bg-light py-2 px-3 px-sm-4 border-top">
+                    <button type="button" class="btn btn-bsis-outline btn-sm fw-semibold order-last order-md-first py-2 px-3 event-detail-btn-close" data-bs-dismiss="modal">
                         <i class="bi bi-x-lg me-1"></i> Close
                     </button>
-                    <div class="d-flex flex-row align-items-center gap-2 flex-grow-1 flex-sm-grow-0 justify-content-end" id="detail-event-actions-bar">
+                    <div class="event-detail-actions-container justify-content-stretch justify-content-md-end flex-grow-1" id="detail-event-actions-bar">
                         <!-- Dynamic action buttons injected via JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin / Faculty Forgot & Reset Password Modal -->
+    <div class="modal fade" id="modal-admin-forgot-password" tabindex="-1" aria-labelledby="modalAdminForgotPwLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+                <div class="modal-header py-3 px-4" style="background: #063B5C; color: #FFFFFF;">
+                    <div class="d-flex align-items-center gap-2">
+                        <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(53, 196, 232, 0.2); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #35C4E8;">
+                            <i class="bi bi-shield-lock-fill"></i>
+                        </div>
+                        <div>
+                            <h6 class="modal-title fw-bold text-white mb-0" id="modalAdminForgotPwLabel">Account Password Recovery</h6>
+                            <small class="text-white-50" style="font-size: 0.76rem;">Talibon Polytechnic College &bull; BSIS Control Center</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="admin-forgot-alert" class="alert alert-danger d-none" style="font-size: 0.85rem; border-radius: 10px;"></div>
+                    <div id="admin-forgot-success" class="alert alert-success d-none" style="font-size: 0.85rem; border-radius: 10px;"></div>
+
+                    <!-- STEP 1: Request Reset Link -->
+                    <div id="admin-forgot-step-1">
+                        <p class="text-muted small mb-3">Enter your registered institutional faculty/staff email address. A secure, 60-minute password reset token will be dispatched to your inbox.</p>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-dark">Institutional Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-envelope-fill"></i></span>
+                                <input type="email" id="admin-forgot-email" class="form-control" placeholder="e.g. faculty@tpc.edu.ph or admin@tpc-bsis.online" onkeydown="if(event.key==='Enter') AdminApp.submitForgotPasswordRequest()">
+                            </div>
+                        </div>
+
+                        <button type="button" id="btn-admin-send-reset" onclick="AdminApp.submitForgotPasswordRequest()" class="btn btn-primary w-100 py-2 fw-semibold" style="background: #063B5C; border-color: #063B5C; border-radius: 10px;">
+                            <i class="bi bi-send-fill me-1"></i> Send Password Reset Code
+                        </button>
+
+                        <div class="text-center mt-3">
+                            <a href="javascript:void(0)" onclick="AdminApp.toggleForgotStep(2)" class="text-decoration-none small text-primary fw-semibold">
+                                Already have a reset token? Enter code &rarr;
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- STEP 2: Enter Token & Set New Password -->
+                    <div id="admin-forgot-step-2" class="d-none">
+                        <p class="text-muted small mb-3">Enter the 64-character token sent to your email, then specify your new secure password.</p>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-dark">Reset Token</label>
+                            <input type="text" id="admin-reset-token" class="form-control font-monospace" placeholder="Paste 64-character token from email" style="font-size: 0.84rem;">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-dark">New Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-lock-fill"></i></span>
+                                <input type="password" id="admin-reset-new-password" class="form-control" placeholder="Enter at least 8 characters" oninput="AdminApp.validateResetPasswordLive()">
+                                <button class="btn btn-outline-secondary" type="button" onclick="AdminApp.togglePasswordVisibility('admin-reset-new-password', this)">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-dark">Confirm New Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-shield-check"></i></span>
+                                <input type="password" id="admin-reset-confirm-password" class="form-control" placeholder="Re-type new password" oninput="AdminApp.validateResetPasswordLive()">
+                                <button class="btn btn-outline-secondary" type="button" onclick="AdminApp.togglePasswordVisibility('admin-reset-confirm-password', this)">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Live Checklist -->
+                        <div class="p-3 mb-3 bg-light rounded border" style="font-size: 0.80rem;">
+                            <div class="fw-bold mb-1 text-dark"><i class="bi bi-shield-lock text-primary"></i> Password Requirements:</div>
+                            <div id="admin-pw-rule-len" class="text-danger"><i class="bi bi-x-circle-fill me-1"></i> Minimum 8 characters</div>
+                            <div id="admin-pw-rule-case" class="text-danger"><i class="bi bi-x-circle-fill me-1"></i> Uppercase & lowercase letters</div>
+                            <div id="admin-pw-rule-sym" class="text-danger"><i class="bi bi-x-circle-fill me-1"></i> Number and special symbol (!@#$%^...)</div>
+                            <div id="admin-pw-rule-match" class="text-danger"><i class="bi bi-x-circle-fill me-1"></i> Passwords must match</div>
+                        </div>
+
+                        <button type="button" id="btn-admin-confirm-reset" onclick="AdminApp.submitPasswordResetExecution()" class="btn btn-primary w-100 py-2 fw-semibold" style="background: #063B5C; border-color: #063B5C; border-radius: 10px;">
+                            <i class="bi bi-check-circle-fill me-1"></i> Confirm & Reset Password
+                        </button>
+
+                        <div class="text-center mt-3">
+                            <a href="javascript:void(0)" onclick="AdminApp.toggleForgotStep(1)" class="text-decoration-none small text-secondary">
+                                &larr; Request a new code
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <!-- Administrator Unlimited Direct Password Override Modal -->
+    <div class="modal fade" id="modal-admin-unli-password-reset" tabindex="-1" aria-labelledby="modalAdminUnliResetLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+                <div class="modal-header py-3 px-4" style="background: #063B5C; color: #FFFFFF;">
+                    <div class="d-flex align-items-center gap-2">
+                        <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(53, 196, 232, 0.2); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #35C4E8;">
+                            <i class="bi bi-key-fill"></i>
+                        </div>
+                        <div>
+                            <h6 class="modal-title fw-bold text-white mb-0" id="modalAdminUnliResetLabel">Admin Instant Password Override</h6>
+                            <small class="text-white-50" style="font-size: 0.76rem;">Unlimited Administrative Override &bull; 7-Day Limit Bypass</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="admin-unli-alert" class="alert alert-danger d-none" style="font-size: 0.85rem; border-radius: 10px;"></div>
+                    
+                    <!-- Target User Info Box -->
+                    <div class="p-3 mb-3 bg-light rounded border text-start" style="border-left: 4px solid var(--color-cyan) !important;">
+                        <input type="hidden" id="admin-unli-user-id">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <strong id="admin-unli-user-name" class="text-dark" style="font-size: 0.95rem;">Student Name</strong>
+                            <span id="admin-unli-user-role" class="badge bg-primary text-white" style="font-size: 0.72rem;">STUDENT</span>
+                        </div>
+                        <div class="text-muted small" style="font-size: 0.82rem;" id="admin-unli-user-email">email@tpc.edu.ph</div>
+                    </div>
+
+                    <!-- Password Form -->
+                    <div id="admin-unli-form-container">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label fw-semibold small text-dark mb-0">New Password</label>
+                                <button type="button" onclick="AdminApp.generateRandomAdminPassword()" class="btn btn-link p-0 text-decoration-none small text-primary fw-semibold" style="font-size: 0.78rem;">
+                                    <i class="bi bi-shuffle"></i> Auto-Generate Strong Password
+                                </button>
+                            </div>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-lock-fill"></i></span>
+                                <input type="text" id="admin-unli-password-input" class="form-control font-monospace" placeholder="Enter custom or click auto-generate" style="font-size: 0.88rem;">
+                                <button class="btn btn-outline-secondary" type="button" onclick="AdminApp.copyUnliPasswordInput()" title="Copy to Clipboard">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                            </div>
+                            <div class="form-text" style="font-size: 0.75rem;">Leave empty to auto-generate a secure random temporary password.</div>
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="admin-unli-send-email" checked>
+                            <label class="form-check-label small text-dark fw-semibold" for="admin-unli-send-email">
+                                Send notification email with new password to user
+                            </label>
+                        </div>
+
+                        <!-- Policy Notice -->
+                        <div class="p-2 mb-3 rounded bg-info bg-opacity-10 border border-info border-opacity-25" style="font-size: 0.78rem; color: #075985;">
+                            <i class="bi bi-shield-check text-info me-1"></i>
+                            <strong>Policy Note:</strong> Administrator resets are <strong>unlimited</strong> and bypass the 7-day student cooldown. The student's registered physical mobile device hardware binding remains safely intact.
+                        </div>
+
+                        <button type="button" id="btn-admin-submit-unli-reset" onclick="AdminApp.submitAdminUnliPasswordReset()" class="btn btn-primary w-100 py-2 fw-semibold" style="background: #063B5C; border-color: #063B5C; border-radius: 10px;">
+                            <i class="bi bi-check-circle-fill me-1"></i> Apply Administrator Reset
+                        </button>
+                    </div>
+
+                    <!-- Success Result Box -->
+                    <div id="admin-unli-success-container" class="d-none text-center py-2">
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
+                        <h6 class="fw-bold text-dark mt-2 mb-1">Password Override Complete! 🎉</h6>
+                        <p class="text-muted small mb-3">The user's password has been updated and active sessions revoked.</p>
+
+                        <div class="p-3 bg-light rounded border mb-3">
+                            <div class="text-muted small mb-1" style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700;">Assigned Password:</div>
+                            <div id="admin-unli-result-password" class="font-monospace fw-bold text-primary fs-5" style="letter-spacing: 1px;">...</div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="button" onclick="AdminApp.copyUnliResultPassword()" class="btn btn-outline-primary flex-grow-1 py-2 fw-semibold" style="border-radius: 10px;">
+                                <i class="bi bi-clipboard me-1"></i> Copy Password
+                            </button>
+                            <button type="button" class="btn btn-primary px-4 fw-semibold" data-bs-dismiss="modal" style="background: #063B5C; border-color: #063B5C; border-radius: 10px;">
+                                Done
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

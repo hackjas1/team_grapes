@@ -140,6 +140,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/{id}', [UserController::class, 'show']);
             Route::put('/{id}', [UserController::class, 'update']);
             Route::post('/{id}/reset-device', [UserController::class, 'resetDevice']);
+            Route::post('/{id}/reset-password', [UserController::class, 'resetPassword']);
             Route::delete('/{id}', [UserController::class, 'destroy']);
             Route::post('/batch-delete', [UserController::class, 'destroyBatch']);
         });

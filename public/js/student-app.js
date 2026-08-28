@@ -114,8 +114,22 @@ const StudentPWA = {
     handleRoute() {
         const hash = window.location.hash || '';
 
+        // Reset password query string / hash parameter check
+        if (hash.startsWith('#reset-password')) {
+            this.showView('view-reset-password');
+            const queryString = hash.includes('?') ? hash.split('?')[1] : window.location.search.replace(/^\?/, '');
+            const urlParams = new URLSearchParams(queryString);
+            const token = urlParams.get('token');
+            const email = urlParams.get('email');
+            const tokenInput = document.getElementById('student-reset-token-input');
+            const idInput = document.getElementById('student-reset-identifier');
+            if (tokenInput && token) tokenInput.value = decodeURIComponent(token);
+            if (idInput && email) idInput.value = decodeURIComponent(email);
+            return;
+        }
+
         // Onboarding query string parameter check
-        if (window.location.search.includes('token=')) {
+        if (window.location.search.includes('token=') && !hash.includes('#reset-password')) {
             const urlParams = new URLSearchParams(window.location.search);
             const token = urlParams.get('token');
             if (token) {
@@ -399,6 +413,109 @@ const StudentPWA = {
             alertBox.innerText = res.data?.message || 'Failed to complete onboarding.';
             alertBox.classList.remove('d-none');
             alertBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    },
+
+    validateStudentResetPasswordLive() {
+        const pass = document.getElementById('student-reset-password')?.value || '';
+        const passConf = document.getElementById('student-reset-password-confirm')?.value || '';
+
+        const hasLen = pass.length >= 8;
+        const hasLower = /[a-z]/.test(pass);
+        const hasUpper = /[A-Z]/.test(pass);
+        const hasNum = /[0-9]/.test(pass);
+        const hasSym = /[^A-Za-z0-9]/.test(pass);
+        const hasMatch = pass.length > 0 && pass === passConf;
+
+        const updateRule = (elId, valid, text) => {
+            const el = document.getElementById(elId);
+            if (!el) return;
+            if (valid) {
+                el.className = 'text-success fw-semibold';
+                el.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i> ${text}`;
+            } else {
+                el.className = 'text-danger';
+                el.innerHTML = `<i class="bi bi-x-circle-fill me-1"></i> ${text}`;
+            }
+        };
+
+        updateRule('student-reset-rule-len', hasLen, 'Minimum 8 characters');
+        updateRule('student-reset-rule-lower', hasLower, 'At least one lowercase letter (a-z)');
+        updateRule('student-reset-rule-upper', hasUpper, 'At least one uppercase letter (A-Z)');
+        updateRule('student-reset-rule-num', hasNum, 'At least one number (0-9)');
+        updateRule('student-reset-rule-sym', hasSym, 'At least one special symbol (!@#$%^&*...)');
+        updateRule('student-reset-rule-match', hasMatch, hasMatch ? 'Passwords match' : 'Passwords must match');
+
+        return hasLen && hasLower && hasUpper && hasNum && hasSym && hasMatch;
+    },
+
+    async handleCompletePasswordReset(event) {
+        event.preventDefault();
+        const identifier = document.getElementById('student-reset-identifier')?.value.trim() || '';
+        const token = document.getElementById('student-reset-token-input')?.value.trim() || '';
+        const pass = document.getElementById('student-reset-password')?.value || '';
+        const passConf = document.getElementById('student-reset-password-confirm')?.value || '';
+        const alertBox = document.getElementById('student-reset-alert');
+        const btn = document.getElementById('student-reset-submit-btn');
+
+        if (!identifier) {
+            if (alertBox) {
+                alertBox.innerText = 'Please enter your student ID or email.';
+                alertBox.classList.remove('d-none');
+            }
+            return;
+        }
+
+        if (!token) {
+            if (alertBox) {
+                alertBox.innerText = 'Please paste your 64-character reset token from email.';
+                alertBox.classList.remove('d-none');
+            }
+            return;
+        }
+
+        const isValid = this.validateStudentResetPasswordLive();
+        if (!isValid) {
+            if (alertBox) {
+                alertBox.innerText = 'Please satisfy all password complexity rules and ensure passwords match.';
+                alertBox.classList.remove('d-none');
+            }
+            return;
+        }
+
+        if (alertBox) alertBox.classList.add('d-none');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Updating Password...';
+        }
+
+        const res = await StorageManager.apiRequest('/api/auth/reset-password', {
+            method: 'POST',
+            body: JSON.stringify({
+                login: identifier,
+                token: token,
+                password: pass,
+                password_confirmation: passConf
+            })
+        });
+
+        if (btn) {
+            btn.disabled = false;
+            btn.innerText = 'Confirm & Update Password';
+        }
+
+        if (res.ok && res.data && res.data.success) {
+            const form = document.getElementById('student-reset-password-form');
+            const successCard = document.getElementById('student-reset-success-card');
+            if (form) form.classList.add('d-none');
+            if (successCard) successCard.classList.remove('d-none');
+            this.showToast('Password reset successfully! Open the mobile app to sign in.', 'success');
+        } else {
+            const errorMsg = res.data?.message || 'Invalid or expired reset token. Please request a new token.';
+            if (alertBox) {
+                alertBox.innerText = errorMsg;
+                alertBox.classList.remove('d-none');
+            }
         }
     },
 
@@ -729,43 +846,43 @@ const StudentPWA = {
         if (windowsContainer) {
             if (isWhole) {
                 windowsContainer.innerHTML = `
-                    <div class="col-6">
+                    <div class="col-12 col-sm-6">
                         <div class="p-2 border rounded bg-white h-100 shadow-sm">
                             <span class="text-dark d-block small fw-bold mb-1"><i class="bi bi-sun-fill text-warning me-1"></i> AM Time-In</span>
-                            <div class="small">${fmtWindowRange(e.am_checkin_start_time, e.am_checkin_end_time)}</div>
+                            <div class="small text-truncate">${fmtWindowRange(e.am_checkin_start_time, e.am_checkin_end_time)}</div>
                         </div>
                     </div>
-                    <div class="col-6">
+                    <div class="col-12 col-sm-6">
                         <div class="p-2 border rounded bg-white h-100 shadow-sm">
                             <span class="text-dark d-block small fw-bold mb-1"><i class="bi bi-box-arrow-right text-info me-1"></i> AM Time-Out</span>
-                            <div class="small">${fmtWindowRange(e.am_checkout_start_time, e.am_checkout_end_time)}</div>
+                            <div class="small text-truncate">${fmtWindowRange(e.am_checkout_start_time, e.am_checkout_end_time)}</div>
                         </div>
                     </div>
-                    <div class="col-6">
+                    <div class="col-12 col-sm-6">
                         <div class="p-2 border rounded bg-white h-100 shadow-sm">
                             <span class="text-dark d-block small fw-bold mb-1"><i class="bi bi-cloud-sun-fill text-primary me-1"></i> PM Time-In</span>
-                            <div class="small">${fmtWindowRange(e.pm_checkin_start_time, e.pm_checkin_end_time)}</div>
+                            <div class="small text-truncate">${fmtWindowRange(e.pm_checkin_start_time, e.pm_checkin_end_time)}</div>
                         </div>
                     </div>
-                    <div class="col-6">
+                    <div class="col-12 col-sm-6">
                         <div class="p-2 border rounded bg-white h-100 shadow-sm">
                             <span class="text-dark d-block small fw-bold mb-1"><i class="bi bi-check2-all text-success me-1"></i> PM Time-Out</span>
-                            <div class="small">${fmtWindowRange(e.pm_checkout_start_time, e.pm_checkout_end_time)}</div>
+                            <div class="small text-truncate">${fmtWindowRange(e.pm_checkout_start_time, e.pm_checkout_end_time)}</div>
                         </div>
                     </div>
                 `;
             } else {
                 windowsContainer.innerHTML = `
-                    <div class="col-6">
+                    <div class="col-12 col-sm-6">
                         <div class="p-2 border rounded bg-white h-100 shadow-sm">
                             <span class="text-dark d-block small fw-bold mb-1"><i class="bi bi-box-arrow-in-right text-success me-1"></i> Time-In Window</span>
-                            <div class="small">${fmtWindowRange(e.checkin_start_time, e.checkin_end_time)}</div>
+                            <div class="small text-truncate">${fmtWindowRange(e.checkin_start_time, e.checkin_end_time)}</div>
                         </div>
                     </div>
-                    <div class="col-6">
+                    <div class="col-12 col-sm-6">
                         <div class="p-2 border rounded bg-white h-100 shadow-sm">
                             <span class="text-dark d-block small fw-bold mb-1"><i class="bi bi-box-arrow-right text-info me-1"></i> Time-Out Window</span>
-                            <div class="small">${fmtWindowRange(e.checkout_start_time, e.checkout_end_time)}</div>
+                            <div class="small text-truncate">${fmtWindowRange(e.checkout_start_time, e.checkout_end_time)}</div>
                         </div>
                     </div>
                 `;

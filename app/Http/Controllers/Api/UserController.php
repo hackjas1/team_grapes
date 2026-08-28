@@ -11,6 +11,9 @@ use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -235,6 +238,75 @@ class UserController extends Controller
 
             return $this->successResponse([], "Device credentials for student {$user->full_name} have been reset by administrator.");
         });
+    }
+
+    /**
+     * Administrator Direct / Unlimited Password Reset Action.
+     * Bypasses the 7-day cooldown policy and allows instant manual override or custom/generated password assignment.
+     */
+    public function resetPassword(Request $request, int $id): JsonResponse
+    {
+        $admin = $request->user();
+        $user = User::findOrFail($id);
+
+        $request->validate([
+            'new_password' => ['nullable', 'string', 'min:8'],
+            'send_email_notification' => ['nullable', 'boolean'],
+        ]);
+
+        $newPassword = $request->input('new_password');
+        $sendEmail = $request->boolean('send_email_notification', true);
+
+        // If no custom password was supplied, auto-generate a strong password
+        $isGenerated = false;
+        if (empty($newPassword)) {
+            $newPassword = 'Tpc#' . Str::random(8) . '!';
+            $isGenerated = true;
+        }
+
+        $user->password = Hash::make($newPassword);
+        if ($user->status === 'pending_onboarding') {
+            $user->status = 'active';
+        }
+        $user->save();
+
+        // Invalidate active Sanctum bearer tokens
+        $user->tokens()->delete();
+
+        // Dispatch email notification to user
+        if ($sendEmail && $user->email) {
+            try {
+                Mail::to($user->email)->send(new \App\Mail\AdminPasswordResetNotificationMail($user, $newPassword, $admin));
+            } catch (\Exception $e) {
+                // Ignore local mailer exceptions
+            }
+        }
+
+        // Security Guarantee: Device binding remains preserved (intact in devices table)
+
+        AuditLog::create([
+            'user_id' => $admin->id,
+            'action' => 'admin_direct_password_reset',
+            'description' => "Administrator {$admin->full_name} performed an unlimited direct password override for user {$user->full_name} ({$user->email}, Role: {$user->role}).",
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'metadata' => [
+                'admin_id' => $admin->id,
+                'target_user_id' => $user->id,
+                'target_email' => $user->email,
+                'role' => $user->role,
+                'is_generated' => $isGenerated,
+                'device_binding_preserved' => true,
+            ],
+        ]);
+
+        return $this->successResponse([
+            'user_id' => $user->id,
+            'full_name' => $user->full_name,
+            'email' => $user->email,
+            'new_password' => $newPassword,
+            'is_generated' => $isGenerated,
+        ], "Password for {$user->full_name} has been reset successfully by administrator.");
     }
 
     /**

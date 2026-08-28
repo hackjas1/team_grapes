@@ -16,7 +16,8 @@ class ResetPasswordRequest extends FormRequest
     {
         return [
             'token' => ['required', 'string'],
-            'email' => ['required', 'string', 'email'],
+            'email' => ['nullable', 'string'],
+            'login' => ['nullable', 'string'],
             'password' => [
                 'required',
                 'string',
@@ -24,5 +25,14 @@ class ResetPasswordRequest extends FormRequest
                 Password::min(8)->letters()->mixedCase()->numbers()->symbols(),
             ],
         ];
+    }
+
+    public function withValidator($validator)
+    {
+        $validator->after(function ($v) {
+            if (empty($this->input('email')) && empty($this->input('login'))) {
+                $v->errors()->add('email', 'Please provide your institutional email address or student ID.');
+            }
+        });
     }
 }

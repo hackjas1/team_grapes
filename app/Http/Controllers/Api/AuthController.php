@@ -11,6 +11,7 @@ use App\Models\Device;
 use App\Models\User;
 use App\Mail\PasswordResetMail;
 use App\Traits\ApiResponse;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -310,22 +311,81 @@ class AuthController extends Controller
     }
 
     /**
-     * Forgot password request.
+     * Forgot password request (Protected with anti-flooding rate limiter).
      */
     public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
     {
-        $email = strtolower($request->input('email'));
-        $user = User::where('email', $email)->first();
+        $input = trim($request->input('login') ?: $request->input('email'));
+        $throttleKey = Str::transliterate('forgot_pw|' . Str::lower($input) . '|' . $request->ip());
 
-        if ($user) {
+        // Max 3 requests per 15 minutes (900s) to prevent spamming and enumeration
+        if (RateLimiter::tooManyAttempts($throttleKey, 3)) {
+            $secondsRemaining = RateLimiter::availableIn($throttleKey);
+
+            AuditLog::create([
+                'user_id' => null,
+                'action' => 'forgot_password_throttled',
+                'description' => "Forgot password throttled for '{$input}' from IP {$request->ip()}. Locked for {$secondsRemaining}s.",
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
+            return $this->errorResponse(
+                "Too many password reset requests. Please wait {$secondsRemaining} second(s) before trying again.",
+                ['retry_after_seconds' => $secondsRemaining],
+                429
+            );
+        }
+
+        RateLimiter::hit($throttleKey, 900);
+
+        $user = User::where('email', strtolower($input))
+            ->orWhere('student_number', $input)
+            ->first();
+
+        if ($user && $user->email) {
+            // Check 7-Day Cooldown Policy on automated self-service resets
+            $lastReset = AuditLog::where('user_id', $user->id)
+                ->whereIn('action', ['password_reset_completed', 'admin_direct_password_reset'])
+                ->latest('created_at')
+                ->first();
+
+            if ($lastReset) {
+                $lastResetTime = Carbon::parse($lastReset->created_at);
+                $cooldownEnd = $lastResetTime->copy()->addDays(7);
+                if ($cooldownEnd->isFuture()) {
+                    $daysLeft = (int) ceil(now()->diffInHours($cooldownEnd) / 24);
+                    $formattedDate = $cooldownEnd->format('M d, Y h:i A');
+
+                    AuditLog::create([
+                        'user_id' => $user->id,
+                        'action' => 'forgot_password_cooldown_blocked',
+                        'description' => "Automated password reset blocked by 7-day cooldown policy for {$user->email}. Last reset on {$lastResetTime->format('M d, Y')}.",
+                        'ip_address' => $request->ip(),
+                        'user_agent' => $request->userAgent(),
+                    ]);
+
+                    return $this->errorResponse(
+                        "Security Policy: Self-service password resets are limited to once every 7 days. Your password was recently reset on {$lastResetTime->format('M d, Y')}. You can request another automated reset in {$daysLeft} day(s) (after {$formattedDate}). For urgent assistance, please coordinate with your BSIS Administrator for an instant password override.",
+                        [
+                            'cooldown_active' => true,
+                            'last_reset_at' => $lastResetTime->toIso8601String(),
+                            'next_allowed_reset_at' => $cooldownEnd->toIso8601String(),
+                            'days_remaining' => $daysLeft,
+                        ],
+                        429
+                    );
+                }
+            }
+
             $token = Str::random(64);
             DB::table('password_reset_tokens')->updateOrInsert(
-                ['email' => $email],
+                ['email' => $user->email],
                 ['token' => Hash::make($token), 'created_at' => now()]
             );
 
             try {
-                Mail::to($email)->send(new PasswordResetMail($token));
+                Mail::to($user->email)->send(new PasswordResetMail($token, $user));
             } catch (\Exception $e) {
                 // Log mail exception if mailer not configured locally
             }
@@ -333,43 +393,120 @@ class AuthController extends Controller
             AuditLog::create([
                 'user_id' => $user->id,
                 'action' => 'forgot_password_requested',
-                'description' => "Password reset requested for email: {$email}",
+                'description' => "Password reset token generated and sent to {$user->email} (User: {$user->full_name}, Role: {$user->role}).",
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->userAgent(),
             ]);
         }
 
-        return $this->successResponse([], 'If the email exists, a password reset link has been dispatched.');
+        // Generic response to prevent user account enumeration
+        return $this->successResponse([], 'If an account matches the provided identifier, a password reset link and code have been sent to the registered institutional email address.');
     }
 
     /**
-     * Reset password using token.
+     * Reset password using token (Enforces 60-min expiry, rate limits, revokes sessions, preserves device binding).
      */
     public function resetPassword(ResetPasswordRequest $request): JsonResponse
     {
-        $email = strtolower($request->input('email'));
-        $token = $request->input('token');
+        $input = trim($request->input('email') ?: $request->input('login'));
+        $token = trim($request->input('token'));
+        $throttleKey = Str::transliterate('reset_pw|' . $request->ip());
 
-        $record = DB::table('password_reset_tokens')->where('email', $email)->first();
+        // Max 5 attempts per 15 minutes to prevent brute-forcing reset tokens
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $secondsRemaining = RateLimiter::availableIn($throttleKey);
 
-        if (!$record || !Hash::check($token, $record->token)) {
+            AuditLog::create([
+                'user_id' => null,
+                'action' => 'password_reset_throttled',
+                'description' => "Password reset brute-force throttled from IP {$request->ip()}.",
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
+            return $this->errorResponse(
+                "Too many failed password reset attempts. Please wait {$secondsRemaining} second(s) before attempting again.",
+                ['retry_after_seconds' => $secondsRemaining],
+                429
+            );
+        }
+
+        $user = User::where('email', strtolower($input))
+            ->orWhere('student_number', $input)
+            ->first();
+
+        if (!$user) {
+            RateLimiter::hit($throttleKey, 900);
             return $this->errorResponse('Invalid or expired password reset token.', [], 400);
         }
 
-        $user = User::where('email', $email)->firstOrFail();
+        $record = DB::table('password_reset_tokens')->where('email', $user->email)->first();
+
+        // 1. Verify token existence and hash match
+        if (!$record || !Hash::check($token, $record->token)) {
+            RateLimiter::hit($throttleKey, 900);
+
+            AuditLog::create([
+                'user_id' => $user->id,
+                'action' => 'password_reset_failed',
+                'description' => "Failed password reset attempt for {$user->email}: Invalid token.",
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
+            return $this->errorResponse('Invalid or expired password reset token.', [], 400);
+        }
+
+        // 2. Enforce 60-minute token expiration
+        $createdAt = Carbon::parse($record->created_at);
+        if ($createdAt->addMinutes(60)->isPast()) {
+            RateLimiter::hit($throttleKey, 900);
+            DB::table('password_reset_tokens')->where('email', $user->email)->delete();
+
+            AuditLog::create([
+                'user_id' => $user->id,
+                'action' => 'password_reset_expired',
+                'description' => "Expired password reset token rejected for {$user->email}.",
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
+            return $this->errorResponse('This password reset token has expired (tokens are valid for 60 minutes). Please request a new reset code.', [], 400);
+        }
+
+        // 3. Clear rate limiters
+        RateLimiter::clear($throttleKey);
+        RateLimiter::clear(Str::transliterate('forgot_pw|' . Str::lower($user->email) . '|' . $request->ip()));
+
+        // 4. Update user password
         $user->password = Hash::make($request->input('password'));
+        if ($user->status === 'pending_onboarding') {
+            $user->status = 'active';
+        }
         $user->save();
 
-        DB::table('password_reset_tokens')->where('email', $email)->delete();
+        // 5. Invalidate existing active API Sanctum bearer tokens (forces re-login across web/browsers)
+        $user->tokens()->delete();
+
+        // 6. Consume and delete used reset token
+        DB::table('password_reset_tokens')->where('email', $user->email)->delete();
+
+        // 7. Security Guarantee: Device binding in `devices` table is intentionally KEPT INTACT.
+        // For students, their physical mobile phone keystore credential remains bound and active.
 
         AuditLog::create([
             'user_id' => $user->id,
             'action' => 'password_reset_completed',
-            'description' => "Password reset completed successfully for {$user->email}",
+            'description' => "Password reset completed successfully for {$user->full_name} ({$user->email}, Role: {$user->role}). Sanctum tokens revoked; device hardware binding preserved.",
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
+            'metadata' => [
+                'user_id' => $user->id,
+                'role' => $user->role,
+                'device_binding_preserved' => $user->role === 'student',
+            ],
         ]);
 
-        return $this->successResponse([], 'Password has been reset successfully. You may now log in.');
+        return $this->successResponse([], 'Password has been reset successfully. You may now log in with your new password.');
     }
 }
