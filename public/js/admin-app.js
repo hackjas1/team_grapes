@@ -3822,7 +3822,7 @@ const AdminApp = {
                                     </li>
                                     <li>
                                         <a class="dropdown-item py-2 text-info fw-semibold" href="javascript:void(0)" onclick="AdminApp.promptAdminResetUserPassword(${u.id}, '${safeName}', '${safeEmail}', '${u.role || 'student'}')">
-                                            <i class="bi bi-key-fill text-info me-2"></i> Reset Password (Unli)
+                                            <i class="bi bi-key-fill text-info me-2"></i> Reset Password
                                         </a>
                                     </li>
                                     ${isStudent ? `

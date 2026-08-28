@@ -4087,7 +4087,9 @@
                 </div>
             </div>
         </div>
-    <!-- Administrator Unlimited Direct Password Override Modal -->
+    </div>
+
+    <!-- Administrator Direct Password Reset Modal -->
     <div class="modal fade" id="modal-admin-unli-password-reset" tabindex="-1" aria-labelledby="modalAdminUnliResetLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
@@ -4097,8 +4099,8 @@
                             <i class="bi bi-key-fill"></i>
                         </div>
                         <div>
-                            <h6 class="modal-title fw-bold text-white mb-0" id="modalAdminUnliResetLabel">Admin Instant Password Override</h6>
-                            <small class="text-white-50" style="font-size: 0.76rem;">Unlimited Administrative Override &bull; 7-Day Limit Bypass</small>
+                            <h6 class="modal-title fw-bold text-white mb-0" id="modalAdminUnliResetLabel">Reset Account Password</h6>
+                            <small class="text-white-50" style="font-size: 0.76rem;">Talibon Polytechnic College &bull; BSIS Control Center</small>
                         </div>
                     </div>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -4132,7 +4134,7 @@
                                     <i class="bi bi-clipboard"></i>
                                 </button>
                             </div>
-                            <div class="form-text" style="font-size: 0.75rem;">Leave empty to auto-generate a secure random temporary password.</div>
+                            <div class="form-text" style="font-size: 0.75rem;">Leave empty to automatically generate a secure temporary password.</div>
                         </div>
 
                         <div class="form-check form-switch mb-3">
@@ -4145,18 +4147,18 @@
                         <!-- Policy Notice -->
                         <div class="p-2 mb-3 rounded bg-info bg-opacity-10 border border-info border-opacity-25" style="font-size: 0.78rem; color: #075985;">
                             <i class="bi bi-shield-check text-info me-1"></i>
-                            <strong>Policy Note:</strong> Administrator resets are <strong>unlimited</strong> and bypass the 7-day student cooldown. The student's registered physical mobile device hardware binding remains safely intact.
+                            <strong>Device Security:</strong> The student's registered mobile smartphone hardware keystore binding remains preserved.
                         </div>
 
                         <button type="button" id="btn-admin-submit-unli-reset" onclick="AdminApp.submitAdminUnliPasswordReset()" class="btn btn-primary w-100 py-2 fw-semibold" style="background: #063B5C; border-color: #063B5C; border-radius: 10px;">
-                            <i class="bi bi-check-circle-fill me-1"></i> Apply Administrator Reset
+                            <i class="bi bi-check-circle-fill me-1"></i> Confirm & Reset Password
                         </button>
                     </div>
 
                     <!-- Success Result Box -->
                     <div id="admin-unli-success-container" class="d-none text-center py-2">
                         <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
-                        <h6 class="fw-bold text-dark mt-2 mb-1">Password Override Complete! 🎉</h6>
+                        <h6 class="fw-bold text-dark mt-2 mb-1">Password Reset Complete! 🎉</h6>
                         <p class="text-muted small mb-3">The user's password has been updated and active sessions revoked.</p>
 
                         <div class="p-3 bg-light rounded border mb-3">
