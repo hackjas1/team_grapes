@@ -4144,8 +4144,8 @@
                             </label>
                         </div>
 
-                        <!-- Policy Notice -->
-                        <div class="p-2 mb-3 rounded bg-info bg-opacity-10 border border-info border-opacity-25" style="font-size: 0.78rem; color: #075985;">
+                        <!-- Policy Notice (Only for students with hardware device binding) -->
+                        <div id="admin-unli-device-notice" class="p-2 mb-3 rounded bg-info bg-opacity-10 border border-info border-opacity-25" style="font-size: 0.78rem; color: #075985;">
                             <i class="bi bi-shield-check text-info me-1"></i>
                             <strong>Device Security:</strong> The student's registered mobile smartphone hardware keystore binding remains preserved.
                         </div>

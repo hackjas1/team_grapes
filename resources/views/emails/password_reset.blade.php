@@ -43,7 +43,9 @@
                 <strong style="color: #0F172A;">🔒 Security Details:</strong>
                 <ul style="margin: 6px 0 0 0; padding-left: 18px;">
                     <li>This token is valid for <strong>60 minutes</strong> and can only be used once.</li>
+                    @if(isset($user) && $user->role === 'student')
                     <li><strong>Device Security:</strong> Your registered mobile phone hardware binding is safely preserved. You can sign in immediately on your bound phone once your password is reset.</li>
+                    @endif
                     <li>If you did not request this reset, please ignore this email or notify your BSIS Administrator.</li>
                 </ul>
             </div>

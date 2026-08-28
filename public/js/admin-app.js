@@ -4220,6 +4220,16 @@ const AdminApp = {
             roleEl.className = `badge ${role === 'admin' ? 'bg-danger' : (role === 'event_staff' ? 'bg-info text-dark' : 'bg-primary')}`;
         }
 
+        // Only show mobile device security notice for students (admin & staff do not use device binding)
+        const deviceNoticeEl = document.getElementById('admin-unli-device-notice');
+        if (deviceNoticeEl) {
+            if (role === 'student') {
+                deviceNoticeEl.classList.remove('d-none');
+            } else {
+                deviceNoticeEl.classList.add('d-none');
+            }
+        }
+
         document.getElementById('admin-unli-password-input').value = '';
         document.getElementById('admin-unli-alert').classList.add('d-none');
         document.getElementById('admin-unli-form-container').classList.remove('d-none');

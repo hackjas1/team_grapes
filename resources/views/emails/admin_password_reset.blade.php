@@ -34,9 +34,11 @@
             </div>
 
             <div class="notice-box">
-                <strong style="color: #0F172A;">🔒 Important Device & Access Notes:</strong>
+                <strong style="color: #0F172A;">🔒 Important Access Notes:</strong>
                 <ul style="margin: 6px 0 0 0; padding-left: 18px;">
+                    @if(isset($user) && $user->role === 'student')
                     <li><strong>Device Binding:</strong> Your registered mobile smartphone hardware binding remains safely preserved. You can immediately log in on your bound phone.</li>
+                    @endif
                     <li>If you did not request or expect this change, please immediately coordinate with the BSIS Department Office.</li>
                 </ul>
             </div>
