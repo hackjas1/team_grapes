@@ -806,17 +806,17 @@
             z-index: 1;
         }
 
-        /* Faded Large BSIS Logo Watermark on the Left */
+        /* Faded Large TPC Logo Watermark on the Left Hero Side */
         .admin-login-hero-bg-logo {
             position: absolute;
             bottom: -30px;
             left: -40px;
             width: 300px;
             height: 300px;
-            background-image: url('/images/bsis-logo.png');
+            background-image: url('/images/tpc-logo.png');
             background-size: contain;
             background-repeat: no-repeat;
-            opacity: 0.10;
+            opacity: 0.12;
             pointer-events: none;
             z-index: 0;
             filter: drop-shadow(0 0 24px rgba(53, 196, 232, 0.4));
@@ -875,7 +875,7 @@
             box-shadow: 0 0 12px rgba(53, 196, 232, 0.25);
         }
 
-        /* Right Form Side: TPC School Front Picture on the Back of the White Background */
+        /* Right Form Side: Both BSIS Logo (Left) and TPC School Front (Right) Blended Behind the White Background */
         .admin-login-form-side {
             padding: 44px 40px;
             display: flex;
@@ -887,20 +887,37 @@
             z-index: 1;
         }
 
+        .admin-login-form-bg-logo {
+            position: absolute;
+            bottom: -20px;
+            left: -30px;
+            width: 260px;
+            height: 260px;
+            background-image: url('/images/bsis-logo.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            opacity: 0.08;
+            pointer-events: none;
+            z-index: 0;
+            filter: drop-shadow(0 0 16px rgba(6, 59, 92, 0.15));
+        }
+
         .admin-login-form-bg-building {
             position: absolute;
             top: 0;
-            left: 0;
             right: 0;
             bottom: 0;
+            width: 75%;
             background-image: url('/images/tpc-school-front.png');
             background-size: cover;
-            background-position: center;
+            background-position: center right;
             background-repeat: no-repeat;
-            opacity: 0.18;
+            opacity: 0.16;
+            mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.5) 30%, rgba(0,0,0,1) 100%);
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.5) 30%, rgba(0,0,0,1) 100%);
             pointer-events: none;
             z-index: 0;
-            filter: saturate(1.15);
+            filter: saturate(1.1);
         }
 
         .admin-login-form-bg-overlay {
@@ -909,7 +926,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, rgba(255, 255, 255, 0.94) 100%);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.92) 100%);
             pointer-events: none;
             z-index: 1;
         }
@@ -1199,17 +1216,17 @@
             <div class="admin-login-wrapper">
                 <div class="admin-login-card-container">
                     <div class="row g-0">
-                        <!-- Desktop Left Only: Institutional Showcase with BSIS Logo (Left) & Features -->
+                        <!-- Desktop Left Only: Institutional Showcase with TPC Logo (Left) & Features -->
                         <div class="col-lg-6 d-none d-lg-flex admin-login-hero-side">
-                            <!-- Background Layer: Faded Large BSIS Logo Watermark on the Left -->
+                            <!-- Background Layer: Faded Large TPC Logo Watermark on the Left -->
                             <div class="admin-login-hero-bg-logo"></div>
 
                             <!-- Hero Content -->
                             <div class="admin-login-hero-content">
-                                <!-- Institutional Logo Pairing: BSIS Logo on the Left, TPC Logo on the Right -->
+                                <!-- Institutional Logo Pairing: TPC Logo on the Left, BSIS Logo on the Right -->
                                 <div class="d-flex align-items-center gap-3 mb-4">
+                                    <img src="/images/tpc-logo.png" alt="Talibon Polytechnic College" style="height: 56px; width: 56px; border-radius: 50%; border: 2px solid rgba(53, 196, 232, 0.6); background: #fff; padding: 2px; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
                                     <img src="/images/bsis-logo.png" alt="BSIS Logo" style="height: 56px; width: 56px; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.35)); flex-shrink: 0;">
-                                    <img src="/images/tpc-logo.png" alt="Talibon Polytechnic College" style="height: 54px; width: 54px; border-radius: 50%; border: 2px solid rgba(53, 196, 232, 0.6); background: #fff; padding: 2px; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
                                     <div>
                                         <div class="fw-bold text-white fs-6" style="line-height: 1.25; letter-spacing: 0.2px;">TALIBON POLYTECHNIC COLLEGE</div>
                                         <div style="color: var(--color-accent); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.6px;">BSIS DEPARTMENT &bull; CONTROL CENTER</div>
@@ -1260,9 +1277,10 @@
                             </div>
                         </div>
 
-                        <!-- Right on Desktop, Full Card on Mobile: Sleek Sign In Form with TPC School Front in Background -->
+                        <!-- Right on Desktop, Full Card on Mobile: Sleek Sign In Form with BSIS Logo & TPC School Front in Background -->
                         <div class="col-12 col-lg-6 admin-login-form-side">
-                            <!-- Background Layer: Faded TPC School Front Picture on the White Form Side -->
+                            <!-- Background Layers: Faded BSIS Logo (Left) and TPC School Front (Right) on the White Form Side -->
+                            <div class="admin-login-form-bg-logo"></div>
                             <div class="admin-login-form-bg-building"></div>
                             <div class="admin-login-form-bg-overlay"></div>
 

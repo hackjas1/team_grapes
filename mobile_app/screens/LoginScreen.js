@@ -347,15 +347,15 @@ export default function LoginScreen({ navigation }) {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.card}>
-          {/* Institutional Logos Side-by-Side: BSIS on Left, TPC on Right */}
+          {/* Institutional Logos Side-by-Side: TPC on Left, BSIS on Right */}
           <View style={styles.logoContainer}>
             <Image 
-              source={require('../assets/bsis-logo.png')} 
+              source={require('../assets/tpc-logo.png')} 
               style={styles.logo} 
             />
             <View style={styles.logoDivider} />
             <Image 
-              source={require('../assets/tpc-logo.png')} 
+              source={require('../assets/bsis-logo.png')} 
               style={styles.logo} 
             />
           </View>
