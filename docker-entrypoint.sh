@@ -17,5 +17,9 @@ php artisan config:clear || true
 php artisan route:clear || true
 php artisan view:clear || true
 
+# Ensure database queue table exists and start background worker
+php artisan migrate --force || true
+php artisan queue:work --sleep=2 --tries=3 --timeout=60 --queue=default &
+
 # Execute main container command
 exec "$@"

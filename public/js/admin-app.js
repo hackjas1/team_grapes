@@ -5768,9 +5768,16 @@ const AdminApp = {
             if (onCancel) onCancel();
         });
 
-        overlay.querySelector('.bsis-confirm-ok').addEventListener('click', () => {
-            close();
-            if (onConfirm) onConfirm();
+        overlay.querySelector('.bsis-confirm-ok').addEventListener('click', async (e) => {
+            const btn = e.currentTarget;
+            if (btn.disabled) return;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Processing...';
+            try {
+                if (onConfirm) await onConfirm();
+            } finally {
+                close();
+            }
         });
 
         // Close on overlay background click
