@@ -28,11 +28,14 @@ class StudentProvisioningController extends Controller
     {
         $admin = $request->user();
 
-        return DB::transaction(function () use ($request, $admin) {
-            $role = in_array($request->input('role'), ['student', 'event_staff', 'admin']) 
-                ? $request->input('role') 
-                : 'student';
+        $role = in_array($request->input('role'), ['student', 'event_staff', 'admin']) 
+            ? $request->input('role') 
+            : 'student';
 
+        $baseUrl = $request->getSchemeAndHttpHost();
+        $tokenString = Str::random(64);
+
+        $result = DB::transaction(function () use ($request, $admin, $role, $tokenString) {
             $user = User::create([
                 'uuid' => (string) Str::uuid(),
                 'student_number' => trim($request->input('student_number')),
@@ -48,23 +51,11 @@ class StudentProvisioningController extends Controller
             ]);
 
             // Create 48-hour secure onboarding token
-            $tokenString = Str::random(64);
             $onboardingToken = OnboardingToken::create([
                 'user_id' => $user->id,
                 'token' => $tokenString,
                 'expires_at' => now()->addHours(48),
             ]);
-
-            $baseUrl = $request->getSchemeAndHttpHost();
-            $onboardingUrl = "{$baseUrl}/onboarding?token={$tokenString}";
-            $downloadUrl = "{$baseUrl}/download/app/{$tokenString}";
-
-            // Send onboarding email
-            try {
-                Mail::to($user->email)->send(new StudentOnboardingMail($user, $onboardingUrl, $downloadUrl));
-            } catch (\Exception $e) {
-                Log::error("Failed to send onboarding email to {$user->email}: " . $e->getMessage());
-            }
 
             AuditLog::create([
                 'user_id' => $admin->id,
@@ -78,20 +69,38 @@ class StudentProvisioningController extends Controller
                 ],
             ]);
 
-            return $this->successResponse([
-                'student' => [
-                    'id' => $user->id,
-                    'student_number' => $user->student_number,
-                    'full_name' => $user->full_name,
-                    'email' => $user->email,
-                    'year_level' => $user->year_level,
-                    'section_block' => $user->section_block,
-                    'status' => $user->status,
-                ],
-                'onboarding_url' => $onboardingUrl,
-                'expires_at' => $onboardingToken->expires_at,
-            ], 'Student account provisioned successfully. Onboarding email sent.', 201);
+            return [$user, $onboardingToken];
         });
+
+        [$user, $onboardingToken] = $result;
+
+        $onboardingUrl = "{$baseUrl}/onboarding?token={$tokenString}";
+        $downloadUrl = "{$baseUrl}/download/app/{$tokenString}";
+        $studentHubUrl = "{$baseUrl}/student";
+
+        // Send onboarding email outside DB transaction
+        $emailSent = false;
+        try {
+            Mail::to($user->email)->send(new StudentOnboardingMail($user, $onboardingUrl, $downloadUrl, $studentHubUrl));
+            $emailSent = true;
+        } catch (\Throwable $e) {
+            Log::error("Failed to send onboarding email to {$user->email}: " . $e->getMessage());
+        }
+
+        return $this->successResponse([
+            'student' => [
+                'id' => $user->id,
+                'student_number' => $user->student_number,
+                'full_name' => $user->full_name,
+                'email' => $user->email,
+                'year_level' => $user->year_level,
+                'section_block' => $user->section_block,
+                'status' => $user->status,
+            ],
+            'email_sent' => $emailSent,
+            'onboarding_url' => $onboardingUrl,
+            'expires_at' => $onboardingToken->expires_at,
+        ], $emailSent ? 'Student account provisioned successfully. Onboarding email sent.' : 'Student account provisioned successfully.', 201);
     }
 
     /**

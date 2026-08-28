@@ -37,6 +37,12 @@ class StudentOnboardingMail extends Mailable
     {
         return new Content(
             view: 'emails.onboarding',
+            with: [
+                'user' => $this->user,
+                'onboardingUrl' => $this->onboardingUrl,
+                'downloadUrl' => $this->downloadUrl,
+                'studentHubUrl' => $this->studentHubUrl,
+            ],
         );
     }
 
