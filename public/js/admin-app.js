@@ -3785,6 +3785,7 @@ const AdminApp = {
                 table.innerHTML = users.map(u => {
                     const isCurrent = currentUser && (currentUser.id === u.id || currentUser.email === u.email);
                     const safeName = (u.full_name || '').replace(/'/g, "\\'");
+                    const safeEmail = (u.email || '').replace(/'/g, "\\'");
                     const isStudent = u.role === 'student';
                     const roleBadgeClass = u.role === 'admin' 
                         ? 'bsis-badge-danger' 
