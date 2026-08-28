@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
@@ -62,7 +63,7 @@ class StudentProvisioningController extends Controller
             try {
                 Mail::to($user->email)->send(new StudentOnboardingMail($user, $onboardingUrl, $downloadUrl));
             } catch (\Exception $e) {
-                // Log mail exception if local mailer fails
+                Log::error("Failed to send onboarding email to {$user->email}: " . $e->getMessage());
             }
 
             AuditLog::create([

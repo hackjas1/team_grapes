@@ -16,6 +16,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -387,7 +388,7 @@ class AuthController extends Controller
             try {
                 Mail::to($user->email)->send(new PasswordResetMail($token, $user));
             } catch (\Exception $e) {
-                // Log mail exception if mailer not configured locally
+                Log::error("Failed to send password reset email to {$user->email}: " . $e->getMessage());
             }
 
             AuditLog::create([

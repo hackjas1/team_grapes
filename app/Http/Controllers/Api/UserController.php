@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
@@ -278,7 +279,7 @@ class UserController extends Controller
             try {
                 Mail::to($user->email)->send(new \App\Mail\AdminPasswordResetNotificationMail($user, $newPassword, $admin));
             } catch (\Exception $e) {
-                // Ignore local mailer exceptions
+                Log::error("Failed to send admin password reset notification email to {$user->email}: " . $e->getMessage());
             }
         }
 
