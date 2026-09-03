@@ -403,8 +403,9 @@
                                 <img src="/images/tpc-logo.png" alt="TPC Logo" style="height: 55px; border-radius: 50%;">
                                 <img src="/images/bsis-logo.png" alt="BSIS Logo" style="height: 55px;">
                             </div>
+                            <div class="fw-bold text-uppercase mb-1" style="color: #063B5C; font-size: 0.95rem; letter-spacing: 0.8px; line-height: 1.25;">TALIBON POLYTECHNIC COLLEGE</div>
+                            <div class="text-muted small fw-bold text-uppercase mb-2" style="font-size: 0.75rem; letter-spacing: 0.5px;">BSIS DEPARTMENT</div>
                             <h4 class="fw-bold text-primary mb-1">Student Account Activation</h4>
-                            <p class="text-muted small mb-0">BSIS Department</p>
                         </div>
 
                         <div id="onboarding-alert" class="alert alert-danger d-none" style="font-size: 0.88rem;"></div>
@@ -500,8 +501,9 @@
                                 <img src="/images/tpc-logo.png" alt="TPC Logo" style="height: 55px; border-radius: 50%;">
                                 <img src="/images/bsis-logo.png" alt="BSIS Logo" style="height: 55px;">
                             </div>
+                            <div class="fw-bold text-uppercase mb-1" style="color: #063B5C; font-size: 0.95rem; letter-spacing: 0.8px; line-height: 1.25;">TALIBON POLYTECHNIC COLLEGE</div>
+                            <div class="text-muted small fw-bold text-uppercase mb-2" style="font-size: 0.75rem; letter-spacing: 0.5px;">BSIS DEPARTMENT</div>
                             <h4 class="fw-bold text-primary mb-1">Student Password Reset</h4>
-                            <p class="text-muted small mb-0">Talibon Polytechnic College &bull; BSIS Portal</p>
                         </div>
 
                         <div id="student-reset-alert" class="alert alert-danger d-none" style="font-size: 0.88rem; border-radius: 10px;"></div>
