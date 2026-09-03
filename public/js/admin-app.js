@@ -351,12 +351,30 @@ const AdminApp = {
                 mainContent.style.marginLeft = newState ? '72px' : '260px';
             }
         }
+
+        // Dynamically update trigger button tooltip and icon
+        const collapseBtn = document.querySelector('.sidebar-collapse-trigger-btn');
+        if (collapseBtn) {
+            collapseBtn.setAttribute('title', newState ? 'Expand Sidebar' : 'Collapse Sidebar');
+            const icon = collapseBtn.querySelector('i');
+            if (icon) {
+                icon.className = newState ? 'bi bi-layout-sidebar-inset-reverse fs-5' : 'bi bi-layout-sidebar-inset fs-5';
+            }
+        }
     },
 
     initSidebarState() {
         if (localStorage.getItem('admin_sidebar_collapsed') === 'true' && window.innerWidth >= 992) {
             document.documentElement.classList.add('sidebar-collapsed');
             document.body.classList.add('sidebar-collapsed');
+            const collapseBtn = document.querySelector('.sidebar-collapse-trigger-btn');
+            if (collapseBtn) {
+                collapseBtn.setAttribute('title', 'Expand Sidebar');
+                const icon = collapseBtn.querySelector('i');
+                if (icon) {
+                    icon.className = 'bi bi-layout-sidebar-inset-reverse fs-5';
+                }
+            }
         }
     },
 

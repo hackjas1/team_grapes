@@ -246,14 +246,15 @@
         }
 
         .sidebar-brand-logo-slot {
-            width: 72px;
-            min-width: 72px;
-            max-width: 72px;
+            width: 58px;
+            min-width: 58px;
+            max-width: 58px;
             height: 72px;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .sidebar-brand-logo {
@@ -269,52 +270,34 @@
         .sidebar-brand-text {
             flex-grow: 1;
             min-width: 0;
-            white-space: nowrap;
             overflow: hidden;
-            padding-right: 12px;
-        }
-
-        .sidebar-collapse-container {
-            height: 46px;
-            min-height: 46px;
-            max-height: 46px;
-            box-sizing: border-box;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            padding: 0;
-            flex-shrink: 0;
-            width: 100%;
-        }
-
-        .sidebar-collapse-slot {
-            width: 72px;
-            min-width: 72px;
-            max-width: 72px;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
+            padding-right: 4px;
         }
 
         .sidebar-collapse-trigger-btn {
             color: rgba(255, 255, 255, 0.75);
-            transition: color 0.2s ease, transform 0.2s ease;
+            transition: color 0.2s ease, transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
             width: 32px;
             height: 32px;
+            min-width: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 0;
-            background: transparent;
-            border: none;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 8px;
             cursor: pointer;
+            margin-right: 12px;
+            flex-shrink: 0;
+            text-decoration: none;
         }
 
         .sidebar-collapse-trigger-btn:hover {
             color: var(--color-accent) !important;
-            transform: scale(1.1);
+            background: rgba(53, 196, 232, 0.16) !important;
+            border-color: rgba(53, 196, 232, 0.45) !important;
+            transform: scale(1.05);
         }
 
         .sidebar-nav-link { 
@@ -422,6 +405,67 @@
             html.sidebar-collapsed .admin-content,
             body.sidebar-collapsed.admin-content {
                 margin-left: 72px !important;
+            }
+
+            html.sidebar-collapsed body .sidebar-brand,
+            body.sidebar-collapsed .sidebar-brand {
+                position: relative;
+                justify-content: center !important;
+                padding: 0 !important;
+            }
+
+            html.sidebar-collapsed body .sidebar-brand-wrapper,
+            body.sidebar-collapsed .sidebar-brand-wrapper {
+                width: 72px !important;
+                justify-content: center !important;
+            }
+
+            html.sidebar-collapsed body .sidebar-brand-logo-slot,
+            body.sidebar-collapsed .sidebar-brand-logo-slot {
+                width: 72px !important;
+                min-width: 72px !important;
+                max-width: 72px !important;
+                margin: 0 auto;
+            }
+
+            html.sidebar-collapsed body .sidebar-collapse-trigger-btn,
+            body.sidebar-collapsed .sidebar-collapse-trigger-btn {
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 72px !important;
+                height: 72px !important;
+                margin: 0 !important;
+                border-radius: 0 !important;
+                border: none !important;
+                background: transparent !important;
+                opacity: 0 !important;
+                z-index: 20 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                cursor: pointer !important;
+                transition: opacity 0.2s ease, background-color 0.2s ease !important;
+            }
+
+            html.sidebar-collapsed body .sidebar-collapse-trigger-btn:hover,
+            body.sidebar-collapsed .sidebar-collapse-trigger-btn:hover {
+                opacity: 1 !important;
+                background: rgba(4, 37, 58, 0.92) !important;
+                backdrop-filter: blur(4px) !important;
+                transform: none !important;
+            }
+
+            html.sidebar-collapsed body .sidebar-collapse-trigger-btn i,
+            body.sidebar-collapsed .sidebar-collapse-trigger-btn i {
+                display: none;
+            }
+
+            html.sidebar-collapsed body .sidebar-collapse-trigger-btn:hover i,
+            body.sidebar-collapsed .sidebar-collapse-trigger-btn:hover i {
+                display: block !important;
+                font-size: 1.35rem !important;
+                color: var(--color-accent) !important;
             }
 
             html.sidebar-collapsed body .sidebar-brand-text,
@@ -1140,19 +1184,14 @@
                     <div style="font-size: 0.65rem; color: var(--color-accent); letter-spacing: 0.2px; margin-top: 2px;">Talibon Polytechnic College</div>
                 </div>
             </a>
+            <!-- Desktop Sidebar Collapse Button (Beside BSIS Logo & Title) -->
+            <button type="button" class="btn btn-link text-white p-0 sidebar-collapse-trigger-btn d-none d-lg-flex align-items-center justify-content-center flex-shrink-0" onclick="AdminApp.toggleSidebarCollapse()" title="Toggle Sidebar Width" aria-label="Toggle Sidebar width">
+                <i class="bi bi-layout-sidebar-inset fs-5"></i>
+            </button>
             <!-- Mobile Close Button -->
             <button type="button" class="btn btn-link text-white d-lg-none p-1 me-2" onclick="AdminApp.closeMobileSidebar()" aria-label="Close menu">
                 <i class="bi bi-x-lg fs-5"></i>
             </button>
-        </div>
-
-        <!-- Static Steady Collapse Header (Fixed outside scrolling navigation) -->
-        <div class="d-none d-lg-flex align-items-center sidebar-collapse-container border-bottom border-white border-opacity-10">
-            <div class="sidebar-collapse-slot d-flex align-items-center justify-content-center flex-shrink-0">
-                <button type="button" class="btn btn-link text-white p-0 sidebar-collapse-trigger-btn d-flex align-items-center justify-content-center" onclick="AdminApp.toggleSidebarCollapse()" title="Toggle Sidebar Width" aria-label="Toggle Sidebar width">
-                    <i class="bi bi-layout-sidebar-inset fs-5"></i>
-                </button>
-            </div>
         </div>
 
         <nav class="flex-grow-1 py-2" id="admin-sidebar-nav">
