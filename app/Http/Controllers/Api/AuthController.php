@@ -262,18 +262,19 @@ class AuthController extends Controller
     }
 
     /**
-     * Logout and revoke current token.
+     * Logout and revoke all tokens for the user account across all tabs and devices.
      */
     public function logout(Request $request): JsonResponse
     {
         $user = $request->user();
-        if ($user && $user->currentAccessToken()) {
-            $user->currentAccessToken()->delete();
+        if ($user) {
+            // Revoke all personal access tokens for this user account across all tabs and sessions
+            $user->tokens()->delete();
 
             AuditLog::create([
                 'user_id' => $user->id,
                 'action' => 'logout',
-                'description' => "User {$user->full_name} logged out.",
+                'description' => "User {$user->full_name} ({$user->role}) logged out. All active session tokens revoked.",
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->userAgent(),
             ]);

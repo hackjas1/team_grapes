@@ -5750,11 +5750,17 @@ const AdminApp = {
             type: 'warning',
             confirmText: 'Sign Out',
             confirmClass: 'btn-warning',
-            onConfirm: () => {
+            onConfirm: async () => {
+                try {
+                    // Revoke all backend tokens for this account across all tabs and devices
+                    await StorageManager.apiRequest('/api/auth/logout', { method: 'POST' });
+                } catch (e) {}
+
                 StorageManager.clearSession();
                 this.currentActiveLiveEvent = null;
                 const banner = document.getElementById('admin-live-event-banner');
                 if (banner) banner.classList.add('d-none');
+                document.documentElement.classList.add('in-login-view');
                 window.location.hash = '#login';
                 this.handleRoute();
             }

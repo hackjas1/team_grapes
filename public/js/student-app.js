@@ -1839,8 +1839,11 @@ const StudentPWA = {
         }
     },
 
-    logout() {
+    async logout() {
         if (!confirm('Are you sure you want to sign out of your account?')) return;
+        try {
+            await StorageManager.apiRequest('/api/auth/logout', { method: 'POST' });
+        } catch (e) {}
         StorageManager.clearSession();
         window.location.hash = '#login';
         this.handleRoute();

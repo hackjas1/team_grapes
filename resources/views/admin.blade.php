@@ -20,7 +20,11 @@
     <!-- Prevent Unauthenticated Sidebar & Dashboard Flash and Restore Collapsed State -->
     <script>
         (function() {
-            var token = localStorage.getItem('bsis_auth_token') || sessionStorage.getItem('bsis_auth_token');
+            var token = localStorage.getItem('bsis_auth_token');
+            if (!token) {
+                try { sessionStorage.removeItem('bsis_auth_token'); } catch(e) {}
+                try { sessionStorage.removeItem('bsis_user_profile'); } catch(e) {}
+            }
             var hash = window.location.hash;
             if (!token || hash === '#login') {
                 document.documentElement.classList.add('in-login-view');

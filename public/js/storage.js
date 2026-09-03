@@ -4,26 +4,62 @@ const StorageManager = {
     USER_KEY: 'bsis_user_profile',
     DEVICE_KEY: 'bsis_device_credential',
     OFFLINE_QUEUE_KEY: 'bsis_offline_attendance_queue',
+    SYNC_EVENT_KEY: 'bsis_auth_sync_event',
+    _broadcastChannel: null,
+
+    getBroadcastChannel() {
+        if (!this._broadcastChannel && typeof BroadcastChannel !== 'undefined') {
+            try {
+                this._broadcastChannel = new BroadcastChannel('bsis_auth_channel');
+                this._broadcastChannel.onmessage = (event) => {
+                    if (event.data && event.data.action === 'logout') {
+                        this.handleCrossTabLogout();
+                    }
+                };
+            } catch (e) {
+                this._broadcastChannel = null;
+            }
+        }
+        return this._broadcastChannel;
+    },
 
     getToken() {
-        return sessionStorage.getItem(this.TOKEN_KEY);
+        // Check localStorage first as the shared cross-tab source of truth
+        const localToken = localStorage.getItem(this.TOKEN_KEY);
+        if (!localToken) {
+            // If localStorage has no token, any session in this browser has terminated or logged out.
+            // Clean up stale sessionStorage so a refresh cannot retain a stale logged-in session!
+            try { sessionStorage.removeItem(this.TOKEN_KEY); } catch (e) {}
+            try { sessionStorage.removeItem(this.USER_KEY); } catch (e) {}
+            return null;
+        }
+        return localToken;
     },
 
     setToken(token) {
-        sessionStorage.setItem(this.TOKEN_KEY, token);
+        try { localStorage.setItem(this.TOKEN_KEY, token); } catch (e) {}
+        try { sessionStorage.setItem(this.TOKEN_KEY, token); } catch (e) {}
     },
 
     clearToken() {
-        sessionStorage.removeItem(this.TOKEN_KEY);
+        try { localStorage.removeItem(this.TOKEN_KEY); } catch (e) {}
+        try { sessionStorage.removeItem(this.TOKEN_KEY); } catch (e) {}
     },
 
     getUser() {
-        const data = sessionStorage.getItem(this.USER_KEY);
+        const localToken = localStorage.getItem(this.TOKEN_KEY);
+        if (!localToken) {
+            try { sessionStorage.removeItem(this.USER_KEY); } catch (e) {}
+            return null;
+        }
+        const data = localStorage.getItem(this.USER_KEY) || sessionStorage.getItem(this.USER_KEY);
         return data ? JSON.parse(data) : null;
     },
 
     setUser(user) {
-        sessionStorage.setItem(this.USER_KEY, JSON.stringify(user));
+        const serialized = JSON.stringify(user);
+        try { localStorage.setItem(this.USER_KEY, serialized); } catch (e) {}
+        try { sessionStorage.setItem(this.USER_KEY, serialized); } catch (e) {}
     },
 
     getDeviceCredential() {
@@ -35,12 +71,53 @@ const StorageManager = {
     },
 
     clearSession() {
-        sessionStorage.removeItem(this.TOKEN_KEY);
-        sessionStorage.removeItem(this.USER_KEY);
+        try { sessionStorage.removeItem(this.TOKEN_KEY); } catch (e) {}
+        try { sessionStorage.removeItem(this.USER_KEY); } catch (e) {}
+        try { localStorage.removeItem(this.TOKEN_KEY); } catch (e) {}
+        try { localStorage.removeItem(this.USER_KEY); } catch (e) {}
+
+        // Broadcast to other open tabs using BroadcastChannel
         try {
-            localStorage.removeItem(this.TOKEN_KEY);
-            localStorage.removeItem(this.USER_KEY);
+            const channel = this.getBroadcastChannel();
+            if (channel) {
+                channel.postMessage({ action: 'logout', timestamp: Date.now() });
+            }
         } catch (e) {}
+
+        // Trigger storage event across all other tabs/windows
+        try {
+            localStorage.setItem(this.SYNC_EVENT_KEY, JSON.stringify({
+                action: 'logout',
+                timestamp: Date.now()
+            }));
+        } catch (e) {}
+    },
+
+    handleCrossTabLogout() {
+        try { sessionStorage.removeItem(this.TOKEN_KEY); } catch (e) {}
+        try { sessionStorage.removeItem(this.USER_KEY); } catch (e) {}
+
+        // Invalidate Admin Console view if loaded
+        if (typeof AdminApp !== 'undefined' && AdminApp.handleRoute) {
+            AdminApp.currentActiveLiveEvent = null;
+            const banner = document.getElementById('admin-live-event-banner');
+            if (banner) banner.classList.add('d-none');
+            document.documentElement.classList.add('in-login-view');
+            window.location.hash = '#login';
+            AdminApp.handleRoute();
+            if (typeof AdminApp.showToast === 'function') {
+                AdminApp.showToast('Session ended. You were signed out from another tab or window.', 'warning');
+            }
+        }
+
+        // Invalidate Student App view if loaded
+        if (typeof StudentApp !== 'undefined' && StudentApp.handleRoute) {
+            window.location.hash = '#login';
+            StudentApp.handleRoute();
+            if (typeof StudentApp.showToast === 'function') {
+                StudentApp.showToast('Session ended. You were signed out from another tab or window.');
+            }
+        }
     },
 
     // Offline Attendance Queue Helpers
@@ -87,9 +164,9 @@ const StorageManager = {
 
             const json = await response.json().catch(() => null);
 
-            if (response.status === 401 && (!json || json.message === 'Unauthenticated.')) {
+            if (response.status === 401) {
                 this.clearSession();
-                window.location.hash = '#login';
+                this.handleCrossTabLogout();
             }
 
             return {
@@ -107,8 +184,21 @@ const StorageManager = {
     }
 };
 
-// Security: Clean up any legacy persistent localStorage auth tokens on script load
+// Initialize BroadcastChannel listener
 try {
-    localStorage.removeItem(StorageManager.TOKEN_KEY);
-    localStorage.removeItem(StorageManager.USER_KEY);
+    StorageManager.getBroadcastChannel();
 } catch (e) {}
+
+// Listen for cross-tab storage changes (fired by other tabs on the same origin)
+window.addEventListener('storage', (e) => {
+    if (e.key === StorageManager.TOKEN_KEY && !e.newValue) {
+        StorageManager.handleCrossTabLogout();
+    } else if (e.key === StorageManager.SYNC_EVENT_KEY && e.newValue) {
+        try {
+            const payload = JSON.parse(e.newValue);
+            if (payload && payload.action === 'logout') {
+                StorageManager.handleCrossTabLogout();
+            }
+        } catch (err) {}
+    }
+});
