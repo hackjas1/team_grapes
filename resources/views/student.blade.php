@@ -236,6 +236,10 @@
         .modal-backdrop {
             z-index: 1050 !important;
         }
+        .modal-header.text-white .modal-title,
+        .modal-header[style*="background"] .modal-title {
+            color: #FFFFFF !important;
+        }
     </style>
 </head>
 <body>
@@ -621,7 +625,7 @@
                     <div class="modal-header text-white" style="background: linear-gradient(135deg, #063B5C 0%, #032134 100%); border-top-left-radius: 20px; border-top-right-radius: 20px;">
                         <div class="d-flex align-items-center gap-2">
                             <i class="bi bi-apple fs-4 text-white"></i>
-                            <h5 class="modal-title fw-bold mb-0">iOS Installation Guide (iPhone & iPad)</h5>
+                            <h5 class="modal-title fw-bold mb-0 text-white" style="color: #FFFFFF !important;">iOS Installation Guide (iPhone & iPad)</h5>
                         </div>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>

@@ -88,6 +88,34 @@ h1, h2, h3, h4, h5, h6 {
     letter-spacing: -0.02em;
 }
 
+/* Modal Header Title Color & Contrast Standards */
+.modal-header.text-white .modal-title,
+.modal-header.bg-primary .modal-title,
+.modal-header.bg-danger .modal-title,
+.modal-header.bg-dark .modal-title,
+.modal-header.bg-info .modal-title,
+.modal-header[style*="background"] .modal-title,
+.modal-header.text-white h1, .modal-header.text-white h2, .modal-header.text-white h3,
+.modal-header.text-white h4, .modal-header.text-white h5, .modal-header.text-white h6,
+.modal-header.bg-primary h1, .modal-header.bg-primary h2, .modal-header.bg-primary h3,
+.modal-header.bg-primary h4, .modal-header.bg-primary h5, .modal-header.bg-primary h6 {
+    color: #FFFFFF !important;
+}
+
+.modal-header.text-white i,
+.modal-header.bg-primary i,
+.modal-header.bg-danger i,
+.modal-header.bg-dark i {
+    color: #FFFFFF !important;
+}
+
+.modal-header.bg-warning .modal-title,
+.modal-header.bg-warning h1, .modal-header.bg-warning h2, .modal-header.bg-warning h3,
+.modal-header.bg-warning h4, .modal-header.bg-warning h5, .modal-header.bg-warning h6,
+.modal-header.text-dark .modal-title {
+    color: #0F172A !important;
+}
+
 a {
     color: var(--color-primary);
     text-decoration: none;

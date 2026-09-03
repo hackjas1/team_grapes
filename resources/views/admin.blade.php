@@ -492,6 +492,28 @@
             }
         }
 
+        /* Modal Header Title Color & Contrast Standards (White on Colored Headers) */
+        .modal-header.text-white .modal-title,
+        .modal-header.bg-primary .modal-title,
+        .modal-header.bg-danger .modal-title,
+        .modal-header.bg-dark .modal-title,
+        .modal-header.bg-info .modal-title,
+        .modal-header[style*="background"] .modal-title,
+        .modal-header.text-white h1, .modal-header.text-white h2, .modal-header.text-white h3,
+        .modal-header.text-white h4, .modal-header.text-white h5, .modal-header.text-white h6,
+        .modal-header.bg-primary h1, .modal-header.bg-primary h2, .modal-header.bg-primary h3,
+        .modal-header.bg-primary h4, .modal-header.bg-primary h5, .modal-header.bg-primary h6,
+        .modal-header.bg-danger h1, .modal-header.bg-danger h2, .modal-header.bg-danger h3,
+        .modal-header.bg-danger h4, .modal-header.bg-danger h5, .modal-header.bg-danger h6 {
+            color: #FFFFFF !important;
+        }
+        .modal-header.text-white i,
+        .modal-header.bg-primary i,
+        .modal-header.bg-danger i,
+        .modal-header.bg-dark i {
+            color: #FFFFFF !important;
+        }
+
         .table-success-highlight { animation: highlightFlash 1.5s ease-out; }
         @keyframes highlightFlash { 0% { background-color: #d1e7dd; } 100% { background-color: transparent; } }
         .qr-timer-bar { height: 8px; background: var(--color-accent); transition: width 1s linear; border-radius: 4px; }
@@ -2534,7 +2556,7 @@
             <div class="modal-content border-0">
                 <form onsubmit="AdminApp.handleCreateEvent(event)">
                     <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title fw-bold"><i class="bi bi-geo-alt"></i> Create Event Session & Map Location Picker</h5>
+                        <h5 class="modal-title fw-bold text-white mb-0" style="color: #FFFFFF !important;"><i class="bi bi-geo-alt"></i> Create Event Session & Map Location Picker</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body p-4">
@@ -3016,7 +3038,7 @@
                 <form onsubmit="AdminApp.handleUpdateEvent(event)">
                     <input type="hidden" id="edit-event-id">
                     <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square"></i> Edit Event Session</h5>
+                        <h5 class="modal-title fw-bold text-white mb-0" style="color: #FFFFFF !important;"><i class="bi bi-pencil-square"></i> Edit Event Session</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body p-4">
@@ -3494,7 +3516,7 @@
             <div class="modal-content border-0 shadow">
                 <form onsubmit="AdminApp.handleCreateStudent(event)">
                     <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title fw-bold"><i class="bi bi-person-plus-fill me-2"></i> Register User / Student Account</h5>
+                        <h5 class="modal-title fw-bold text-white mb-0" style="color: #FFFFFF !important;"><i class="bi bi-person-plus-fill me-2"></i> Register User / Student Account</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body p-4">
@@ -3591,7 +3613,7 @@
                                 <i class="bi bi-file-earmark-spreadsheet-fill" style="font-size: 1.15rem;"></i>
                             </div>
                             <div>
-                                <h5 class="modal-title fw-bold mb-0">Batch CSV Student Provisioning</h5>
+                                <h5 class="modal-title fw-bold mb-0 text-white" style="color: #FFFFFF !important;">Batch CSV Student Provisioning</h5>
                                 <small class="text-light" style="opacity: 0.85;">Register multiple student profiles simultaneously</small>
                             </div>
                         </div>
@@ -3652,7 +3674,7 @@
             <div class="modal-content border-0 shadow">
                 <form onsubmit="AdminApp.handleManualOverride(event)">
                     <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title fw-bold"><i class="bi bi-person-check-fill me-2"></i> Manual Staff Attendance Override</h5>
+                        <h5 class="modal-title fw-bold text-white mb-0" style="color: #FFFFFF !important;"><i class="bi bi-person-check-fill me-2"></i> Manual Staff Attendance Override</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body p-4">
@@ -3711,7 +3733,7 @@
             <div class="modal-content border-0">
                 <form onsubmit="AdminApp.handleSaveQrSettings(event)">
                     <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title fw-bold"><i class="bi bi-clock-history"></i> Dynamic QR Expiration Settings</h5>
+                        <h5 class="modal-title fw-bold text-white mb-0" style="color: #FFFFFF !important;"><i class="bi bi-clock-history"></i> Dynamic QR Expiration Settings</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body p-4">
@@ -3811,7 +3833,7 @@
                 <form onsubmit="AdminApp.handleUpdateUser(event)">
                     <input type="hidden" id="edit-user-id">
                     <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square"></i> Edit User Information</h5>
+                        <h5 class="modal-title fw-bold text-white mb-0" style="color: #FFFFFF !important;"><i class="bi bi-pencil-square"></i> Edit User Information</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body p-4">
@@ -3911,7 +3933,7 @@
                     <input type="hidden" id="delete-event-mode" value="single">
                     <input type="hidden" id="delete-event-target-id" value="">
                     <div class="modal-header bg-danger text-white">
-                        <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i> Confirm Event Deletion</h5>
+                        <h5 class="modal-title fw-bold text-white mb-0" style="color: #FFFFFF !important;"><i class="bi bi-exclamation-triangle-fill me-2"></i> Confirm Event Deletion</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body p-4">
@@ -4002,7 +4024,7 @@
                     <input type="hidden" id="delete-target-mode" value="single">
                     <input type="hidden" id="delete-target-id" value="">
                     <div class="modal-header bg-danger text-white">
-                        <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle-fill"></i> Confirm User Deletion</h5>
+                        <h5 class="modal-title fw-bold text-white mb-0" style="color: #FFFFFF !important;"><i class="bi bi-exclamation-triangle-fill"></i> Confirm User Deletion</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body p-4">
