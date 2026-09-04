@@ -164,6 +164,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('/create', [BackupController::class, 'create']);
             Route::get('/{filename}/download', [BackupController::class, 'download']);
             Route::post('/{filename}/restore', [BackupController::class, 'restore']);
+            Route::post('/upload-restore', [BackupController::class, 'uploadAndRestore']);
         });
     });
 });

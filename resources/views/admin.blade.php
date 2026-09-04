@@ -17,6 +17,19 @@
     <!-- BSIS Institutional Color Theme CSS -->
     <link rel="stylesheet" href="/css/bsis-theme.css?v={{ time() }}">
 
+    <!-- Security: Suppress DevTools console output to protect credentials, tokens, and keys -->
+    <script>
+        (function() {
+            try {
+                var noop = function() {};
+                window.console.log = noop;
+                window.console.info = noop;
+                window.console.debug = noop;
+                window.console.warn = noop;
+            } catch(e) {}
+        })();
+    </script>
+
     <!-- Prevent Unauthenticated Sidebar & Dashboard Flash and Restore Collapsed State -->
     <script>
         (function() {
@@ -658,12 +671,6 @@
             border-radius: 10px !important;
         }
 
-        #view-qr-display:fullscreen #qr-raw-token-text,
-        #view-qr-display:-webkit-full-screen #qr-raw-token-text,
-        #view-qr-display.is-fullscreen #qr-raw-token-text,
-        body.qr-fullscreen-active #view-qr-display #qr-raw-token-text {
-            display: none !important;
-        }
 
         #view-qr-display:fullscreen .qr-timer-bar,
         #view-qr-display:-webkit-full-screen .qr-timer-bar,
@@ -1857,7 +1864,6 @@
                             <div class="qr-timer-bar mx-auto mb-2" id="qr-timer-progress" style="width: 100%;"></div>
                             <span class="fw-bold text-primary" style="font-size: 1.2rem;">Refreshes in <span id="qr-timer-text">20s</span></span>
                         </div>
-                        <p class="text-muted small mb-0 font-monospace text-break" id="qr-raw-token-text" style="font-size: 0.7rem;"></p>
                     </div>
                 </div>
 
@@ -2512,15 +2518,26 @@
 
         <!-- VIEW 11: DATABASE BACKUPS -->
         <section id="view-backups" class="admin-view d-none">
-            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-4">
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-3">
                 <div>
                     <h3 class="fw-bold text-primary mb-1">Database Backup & Recovery</h3>
                     <p class="text-muted small mb-0">Create, download, and restore system snapshots</p>
                 </div>
-                <div>
-                    <button onclick="AdminApp.createBackup()" class="btn btn-bsis-primary text-nowrap">
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="button" onclick="AdminApp.triggerUploadBackup()" class="btn btn-outline-primary text-nowrap fw-bold">
+                        <i class="bi bi-upload me-1"></i> Upload & Restore (.sql)
+                    </button>
+                    <button type="button" onclick="AdminApp.createBackup()" class="btn btn-bsis-primary text-nowrap fw-bold">
                         <i class="bi bi-database-add me-1"></i> Create Backup
                     </button>
+                    <input type="file" id="backup-file-upload-input" accept=".sql" style="display: none;" onchange="AdminApp.handleUploadBackupFile(event)">
+                </div>
+            </div>
+
+            <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center" style="font-size: 0.83rem;">
+                <i class="bi bi-shield-check fs-5 me-2 text-primary flex-shrink-0"></i>
+                <div>
+                    <strong>Automatic Local Safe-Keeping:</strong> When you click "Create Backup", the SQL snapshot is generated on the server and <u>automatically downloaded to your computer's Downloads folder</u>. If server files are ever cleared by hosting policies or redeployment, you can restore immediately using <strong>Upload & Restore (.sql)</strong>.
                 </div>
             </div>
 

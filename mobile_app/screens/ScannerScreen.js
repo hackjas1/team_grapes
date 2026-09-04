@@ -534,7 +534,6 @@ export default function ScannerScreen({ navigation }) {
 
     } catch (error) {
       await triggerHaptic('error');
-      console.log('Attendance Scan Error:', error.response?.data || error.message);
       
       let msg = 'Failed to record attendance. Please try again.';
       if (error.response?.data) {

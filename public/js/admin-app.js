@@ -2781,11 +2781,8 @@ const AdminApp = {
                     const overlay = document.getElementById('qr-closed-overlay');
                     const badge = document.getElementById('qr-window-badge');
                     const msgBox = document.getElementById('qr-window-message');
-                    const rawToken = document.getElementById('qr-raw-token-text');
-
                     if (qrWrapper) qrWrapper.innerHTML = '';
                     if (qrImg) qrImg.classList.add('d-none');
-                    if (rawToken) rawToken.innerText = '';
                     if (activeContainer) activeContainer.classList.add('d-none');
                     if (overlay) {
                         overlay.classList.remove('d-none');
@@ -2865,13 +2862,8 @@ const AdminApp = {
             this.currentWindowIsOpen = (windowStatus?.is_open || false) || !!event.allow_window_bypass;
 
             const titleEl = document.getElementById('qr-display-title');
-            const venueEl = document.getElementById('qr-display-venue');
-            const rawTokenEl = document.getElementById('qr-raw-token-text');
-            const intervalBadge = document.getElementById('qr-interval-badge-display');
-
             if (titleEl) titleEl.innerText = event.title;
             if (venueEl) venueEl.innerText = event.venue_name;
-            if (rawTokenEl) rawTokenEl.innerText = token || '';
             if (intervalBadge) intervalBadge.innerText = `Refreshes every ${this.currentQrDurationSeconds}s`;
 
             // Window Status Badge and Message
@@ -2943,7 +2935,6 @@ const AdminApp = {
             if (!this.currentWindowIsOpen || !token) {
                 if (qrWrapper) qrWrapper.innerHTML = '';
                 if (qrImg) qrImg.classList.add('d-none');
-                if (rawTokenEl) rawTokenEl.innerText = '';
                 if (overlay) {
                     overlay.classList.remove('d-none');
                     const closedDetails = document.getElementById('qr-closed-details');
@@ -3435,7 +3426,7 @@ const AdminApp = {
                 return dataObj?.users?.data || dataObj?.data || [];
             }
         } catch (err) {
-            console.error('Autocomplete fetch error:', err);
+            // Autocomplete error handled silently
         }
         return [];
     },
@@ -5661,8 +5652,8 @@ const AdminApp = {
                         <td><span class="badge bg-light text-dark border">${b.size_formatted}</span></td>
                         <td><span class="text-muted small">${b.created_at}</span></td>
                         <td class="text-end">
-                            <a href="/api/backups/${b.filename}/download" class="btn btn-sm btn-primary py-1 px-3 me-1 fw-bold"><i class="bi bi-download me-1"></i> Download</a>
-                            <button onclick="AdminApp.restoreBackup('${b.filename}')" class="btn btn-sm btn-outline-warning py-1 px-3 fw-bold"><i class="bi bi-arrow-counterclockwise me-1"></i> Restore</button>
+                            <button type="button" onclick="AdminApp.downloadBackup('${b.filename}')" class="btn btn-sm btn-primary py-1 px-3 me-1 fw-bold"><i class="bi bi-download me-1"></i> Download</button>
+                            <button type="button" onclick="AdminApp.restoreBackup('${b.filename}')" class="btn btn-sm btn-outline-warning py-1 px-3 fw-bold"><i class="bi bi-arrow-counterclockwise me-1"></i> Restore</button>
                         </td>
                     </tr>
                 `;
@@ -5705,18 +5696,97 @@ const AdminApp = {
     async createBackup() {
         this.showConfirm({
             title: 'Create Database Backup',
-            message: 'Generate a new MySQL SQL dump backup of all events, attendance, and user data?',
+            message: 'Generate a new MySQL SQL dump backup of all events, attendance, and user data? The backup will be saved on the server and downloaded directly to your computer.',
             icon: 'bi-database-fill-gear',
             type: 'info',
             confirmText: 'Create Backup',
             confirmClass: 'btn-primary',
             onConfirm: async () => {
+                this.showToast('Generating database snapshot... Please wait.', 'info');
                 const res = await StorageManager.apiRequest('/api/backups/create', { method: 'POST' });
                 if (res.ok && res.data.success) {
-                    this.showToast('Database backup created successfully!', 'success');
+                    this.showToast('Database backup created and saved to your Downloads folder!', 'success');
+                    // Automatically trigger download to administrator's local machine!
+                    if (res.data.data?.filename) {
+                        this.downloadBackup(res.data.data.filename);
+                    }
                     this.loadBackups();
                 } else {
                     this.showToast(res.data?.message || 'Backup failed.', 'danger');
+                }
+            }
+        });
+    },
+
+    async downloadBackup(filename) {
+        if (!filename) return;
+        const token = StorageManager.getToken();
+        try {
+            const res = await fetch(`/api/backups/${encodeURIComponent(filename)}/download`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/sql, application/octet-stream, text/plain'
+                }
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                this.showToast(err.message || 'Failed to download backup file.', 'danger');
+                return;
+            }
+            const blob = await res.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.setAttribute('download', filename);
+            document.body.appendChild(link);
+            link.click();
+            window.URL.revokeObjectURL(blobUrl);
+            link.remove();
+        } catch (e) {
+            this.showToast('Error downloading backup file.', 'danger');
+        }
+    },
+
+    triggerUploadBackup() {
+        const fileInput = document.getElementById('backup-file-upload-input');
+        if (fileInput) {
+            fileInput.value = '';
+            fileInput.click();
+        }
+    },
+
+    async handleUploadBackupFile(event) {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        if (!file.name.toLowerCase().endsWith('.sql')) {
+            this.showToast('Invalid file format. Please select a valid .sql backup file.', 'warning');
+            return;
+        }
+
+        const sizeKb = (file.size / 1024).toFixed(1);
+        this.showConfirm({
+            title: 'Restore Uploaded SQL Backup',
+            message: `Restore database from local file '${file.name}' (${sizeKb} KB)? WARNING: This will overwrite current database records with this backup!`,
+            icon: 'bi-exclamation-triangle-fill',
+            type: 'danger',
+            confirmText: 'Upload & Restore',
+            confirmClass: 'btn-danger',
+            onConfirm: async () => {
+                this.showToast('Uploading and restoring database... Please wait.', 'info');
+                const formData = new FormData();
+                formData.append('backup_file', file);
+
+                const res = await StorageManager.apiRequest('/api/backups/upload-restore', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (res.ok && res.data?.success) {
+                    this.showToast('Database restored successfully! Reloading...', 'success');
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    this.showToast(res.data?.message || 'Failed to restore uploaded backup.', 'danger');
                 }
             }
         });

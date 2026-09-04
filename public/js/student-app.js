@@ -3,9 +3,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     // Register Service Worker
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/service-worker.js')
-            .then(reg => console.log('BSIS ServiceWorker registered.'))
-            .catch(err => console.error('ServiceWorker error:', err));
+        navigator.serviceWorker.register('/service-worker.js').catch(() => {});
     }
 
     // Initialize App Routing & Event Listeners
@@ -966,7 +964,6 @@ const StudentPWA = {
                 try {
                     return await navigator.mediaDevices.getUserMedia(constraints);
                 } catch (e) {
-                    console.warn('getUserMedia attempt failed with constraints:', constraints, e);
                     if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
                         throw e; // Stop trying if user explicitly denied permission
                     }
@@ -987,7 +984,7 @@ const StudentPWA = {
                         legacyGetUserMedia.call(navigator, constraints, resolve, reject);
                     });
                 } catch (e) {
-                    console.warn('legacy getUserMedia attempt failed:', e);
+                    // Fallback to next constraint
                 }
             }
         }
@@ -1020,7 +1017,7 @@ const StudentPWA = {
             this.mediaStream = await this.getCameraMediaStream();
             if (video) {
                 video.srcObject = this.mediaStream;
-                await video.play().catch(e => console.warn('Video play warning:', e));
+                await video.play().catch(() => {});
             }
 
             if (gpsStatus) gpsStatus.innerText = 'Camera & GPS Active';
@@ -1039,7 +1036,6 @@ const StudentPWA = {
             this.scannerStartTime = Date.now();
             this.tickQrScanner();
         } catch (err) {
-            console.error('Camera startup error:', err);
             if (gpsStatus) gpsStatus.innerText = 'Camera Restricted (Photo Mode)';
 
             if (fallbackOverlay) {
@@ -1211,7 +1207,6 @@ const StudentPWA = {
                     if (timeDeltaSec > 0 && timeDeltaSec < 30 && distMeters > 80) {
                         const speedKmh = (distMeters / 1000) / (timeDeltaSec / 3600);
                         if (speedKmh > 45) {
-                            console.warn('Live GPS jump detected:', distMeters, 'm in', timeDeltaSec, 's =', speedKmh, 'km/h');
                             this.mockLocationDetected = true;
                             this.mockLocationReason = `Sudden GPS position jump detected (${Math.round(distMeters)}m in ${Math.round(timeDeltaSec)}s = ${Math.round(speedKmh)} km/h). Mock Location / Fake GPS app detected.`;
                         }

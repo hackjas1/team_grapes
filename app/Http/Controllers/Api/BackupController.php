@@ -22,7 +22,7 @@ class BackupController extends Controller
     {
         $this->backupDir = storage_path('app/backups');
         if (!File::exists($this->backupDir)) {
-            File::makeDirectory($this->backupDir, 0755, true);
+            File::makeDirectory($this->backupDir, 0775, true, true);
         }
     }
 
@@ -36,11 +36,15 @@ class BackupController extends Controller
             return $this->errorResponse('Only administrators can manage database backups.', [], 403);
         }
 
+        if (!File::exists($this->backupDir)) {
+            File::makeDirectory($this->backupDir, 0775, true, true);
+        }
+
         $files = File::files($this->backupDir);
         $backups = [];
 
         foreach ($files as $file) {
-            if ($file->getExtension() === 'sql') {
+            if (strtolower($file->getExtension()) === 'sql') {
                 $backups[] = [
                     'filename' => $file->getFilename(),
                     'size_bytes' => $file->getSize(),
@@ -68,13 +72,20 @@ class BackupController extends Controller
             return $this->errorResponse('Only administrators can create database backups.', [], 403);
         }
 
+        if (!File::exists($this->backupDir)) {
+            File::makeDirectory($this->backupDir, 0775, true, true);
+        }
+
         $timestamp = date('Y_m_d_His');
         $filename = "backup_tpc_attendance_{$timestamp}.sql";
         $filePath = "{$this->backupDir}/{$filename}";
 
         try {
-            $sqlContent = $this->generateDatabaseDump();
-            File::put($filePath, $sqlContent);
+            $this->generateDatabaseDump($filePath);
+
+            if (!File::exists($filePath) || File::size($filePath) === 0) {
+                throw new \RuntimeException("Backup file was not created or is empty.");
+            }
 
             $fileSize = File::size($filePath);
 
@@ -95,6 +106,7 @@ class BackupController extends Controller
                 'size_bytes' => $fileSize,
                 'size_formatted' => $this->formatBytes($fileSize),
                 'created_at' => date('Y-m-d H:i:s'),
+                'download_url' => "/api/backups/" . urlencode($filename) . "/download",
             ], 'Database backup created successfully.', 201);
         } catch (\Exception $e) {
             return $this->errorResponse('Database backup creation failed: ' . $e->getMessage(), [], 500);
@@ -133,7 +145,7 @@ class BackupController extends Controller
     }
 
     /**
-     * Restore database from backup SQL file.
+     * Restore database from backup SQL file on server.
      */
     public function restore(Request $request, string $filename): JsonResponse
     {
@@ -168,50 +180,129 @@ class BackupController extends Controller
     }
 
     /**
-     * Dump MySQL database tables and data into SQL script string.
+     * Upload and restore database from local computer SQL file.
      */
-    protected function generateDatabaseDump(): string
+    public function uploadAndRestore(Request $request): JsonResponse
     {
-        $tables = DB::select('SHOW TABLES');
-        $dbNameKey = 'Tables_in_' . config('database.connections.mysql.database', 'tpc_attendance');
+        $admin = $request->user();
+        if ($admin->role !== 'admin') {
+            return $this->errorResponse('Only administrators can restore database backups.', [], 403);
+        }
 
-        $out = "-- BSIS Event Attendance System SQL Backup\n";
-        $out .= "-- Generated: " . date('Y-m-d H:i:s') . "\n";
-        $out .= "-- Database: " . config('database.connections.mysql.database') . "\n\n";
-        $out .= "SET FOREIGN_KEY_CHECKS=0;\n\n";
+        $request->validate([
+            'backup_file' => 'required|file|max:102400', // max 100MB
+        ]);
+
+        $file = $request->file('backup_file');
+        $ext = strtolower($file->getClientOriginalExtension());
+        if ($ext !== 'sql') {
+            return $this->errorResponse('Only .sql database dump files can be restored.', [], 422);
+        }
+
+        if (!File::exists($this->backupDir)) {
+            File::makeDirectory($this->backupDir, 0775, true, true);
+        }
+
+        $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $cleanName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $originalName);
+        $filename = "uploaded_{$cleanName}_" . date('Y_m_d_His') . ".sql";
+        $savedPath = "{$this->backupDir}/{$filename}";
+
+        $file->move($this->backupDir, $filename);
+
+        try {
+            $sql = File::get($savedPath);
+            DB::unprepared($sql);
+
+            AuditLog::create([
+                'user_id' => $admin->id,
+                'action' => 'backup_restored',
+                'description' => "Administrator {$admin->full_name} uploaded and restored database from local file '{$file->getClientOriginalName()}'.",
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
+            return $this->successResponse([
+                'filename' => $filename,
+            ], "Database successfully restored from uploaded file '{$file->getClientOriginalName()}'.");
+        } catch (\Exception $e) {
+            return $this->errorResponse('Database restore failed: ' . $e->getMessage(), [], 500);
+        }
+    }
+
+    /**
+     * Dump MySQL database tables and data into SQL script file stream.
+     */
+    protected function generateDatabaseDump(string $filePath): void
+    {
+        @ini_set('max_execution_time', 300);
+        @ini_set('memory_limit', '512M');
+
+        $handle = fopen($filePath, 'w');
+        if (!$handle) {
+            throw new \RuntimeException("Unable to open backup file for writing at '{$filePath}'. Check directory permissions.");
+        }
+
+        $dbName = config('database.connections.mysql.database', 'tpc_attendance');
+
+        fwrite($handle, "-- BSIS Event Attendance System SQL Backup\n");
+        fwrite($handle, "-- Generated: " . date('Y-m-d H:i:s') . "\n");
+        fwrite($handle, "-- Database: {$dbName}\n\n");
+        fwrite($handle, "SET FOREIGN_KEY_CHECKS=0;\n");
+        fwrite($handle, "SET SQL_MODE = \"NO_AUTO_VALUE_ON_ZERO\";\n");
+        fwrite($handle, "SET time_zone = \"+08:00\";\n\n");
+
+        $tables = DB::select("SHOW FULL TABLES WHERE Table_type = 'BASE TABLE'");
 
         foreach ($tables as $tableObj) {
-            $tableName = $tableObj->$dbNameKey;
+            $tableArray = (array) $tableObj;
+            $tableName = reset($tableArray);
+            if (empty($tableName) || !is_string($tableName)) {
+                continue;
+            }
 
             // Create Table SQL
-            $createTableStmt = DB::select("SHOW CREATE TABLE `{$tableName}`")[0];
-            $createSql = $createTableStmt->{'Create Table'} ?? '';
+            $createTableStmt = DB::select("SHOW CREATE TABLE `{$tableName}`");
+            if (empty($createTableStmt)) {
+                continue;
+            }
+            $createSql = $createTableStmt[0]->{'Create Table'} ?? '';
 
-            $out .= "DROP TABLE IF EXISTS `{$tableName}`;\n";
-            $out .= $createSql . ";\n\n";
+            fwrite($handle, "--\n-- Table structure for table `{$tableName}`\n--\n\n");
+            fwrite($handle, "DROP TABLE IF EXISTS `{$tableName}`;\n");
+            fwrite($handle, $createSql . ";\n\n");
 
-            // Table Data SQL
-            $rows = DB::table($tableName)->get();
-            if ($rows->count() > 0) {
+            // Stream Table Data SQL in memory-friendly chunks
+            fwrite($handle, "--\n-- Dumping data for table `{$tableName}`\n--\n\n");
+
+            DB::table($tableName)->orderBy(DB::raw('1'))->chunk(250, function ($rows) use ($handle, $tableName) {
+                if ($rows->isEmpty()) return;
+
+                $firstRow = (array) $rows->first();
+                $cols = array_keys($firstRow);
+                $escapedCols = implode(', ', array_map(fn($c) => "`{$c}`", $cols));
+
+                $valueSets = [];
                 foreach ($rows as $row) {
                     $rowArray = (array) $row;
-                    $cols = array_keys($rowArray);
-                    $escapedCols = array_map(fn($c) => "`{$c}`", $cols);
-                    $vals = array_values($rowArray);
-
                     $escapedVals = array_map(function ($val) {
                         if ($val === null) return 'NULL';
                         return DB::connection()->getPdo()->quote($val);
-                    }, $vals);
+                    }, array_values($rowArray));
 
-                    $out .= "INSERT INTO `{$tableName}` (" . implode(', ', $escapedCols) . ") VALUES (" . implode(', ', $escapedVals) . ");\n";
+                    $valueSets[] = "(" . implode(', ', $escapedVals) . ")";
                 }
-                $out .= "\n";
-            }
+
+                if (!empty($valueSets)) {
+                    fwrite($handle, "INSERT INTO `{$tableName}` ({$escapedCols}) VALUES\n" . implode(",\n", $valueSets) . ";\n");
+                }
+            });
+
+            fwrite($handle, "\n");
         }
 
-        $out .= "SET FOREIGN_KEY_CHECKS=1;\n";
-        return $out;
+        fwrite($handle, "SET FOREIGN_KEY_CHECKS=1;\n");
+        fclose($handle);
     }
 
     protected function formatBytes(int $bytes): string

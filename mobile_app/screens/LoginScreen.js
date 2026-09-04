@@ -147,7 +147,6 @@ export default function LoginScreen({ navigation }) {
       try {
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       } catch(e) {}
-      console.error('Login error:', error.response?.data || error.message);
       const msg = error.response?.data?.message || 'Failed to connect to the server. Please check your internet connection.';
       Alert.alert('Login Failed', msg);
     } finally {
@@ -198,7 +197,7 @@ export default function LoginScreen({ navigation }) {
               return;
             }
           } catch (apiErr) {
-            console.log('Biometric re-auth error:', apiErr.response?.data || apiErr.message);
+            // Biometric re-auth error handled
           }
         }
 
@@ -211,7 +210,7 @@ export default function LoginScreen({ navigation }) {
         }
       }
     } catch (e) {
-      console.log('Biometric auth error:', e);
+      // Biometric auth error handled
     } finally {
       setLoading(false);
     }

@@ -11,8 +11,12 @@ import { ToastProvider } from './context/ToastContext';
 
 import * as SplashScreen from 'expo-splash-screen';
 
-// Disable default dev LogBox banner over the UI
+// Disable default dev LogBox banner over the UI and suppress console output
 LogBox.ignoreAllLogs();
+console.log = () => {};
+console.info = () => {};
+console.warn = () => {};
+console.debug = () => {};
 
 // Import Screens
 import LoginScreen from './screens/LoginScreen';

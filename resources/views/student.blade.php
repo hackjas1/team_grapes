@@ -19,6 +19,19 @@
     <!-- BSIS Institutional Color Theme CSS -->
     <link rel="stylesheet" href="/css/bsis-theme.css">
 
+    <!-- Security: Suppress DevTools console output to protect credentials, tokens, and keys -->
+    <script>
+        (function() {
+            try {
+                var noop = function() {};
+                window.console.log = noop;
+                window.console.info = noop;
+                window.console.debug = noop;
+                window.console.warn = noop;
+            } catch(e) {}
+        })();
+    </script>
+
     <style>
         :root {
             --bsis-navy: #063B5C;

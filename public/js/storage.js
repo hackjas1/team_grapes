@@ -1,4 +1,16 @@
 /* BSIS Attendance System — Storage & API Manager */
+(function() {
+    try {
+        if (typeof window !== 'undefined') {
+            var noop = function() {};
+            window.console.log = noop;
+            window.console.info = noop;
+            window.console.debug = noop;
+            window.console.warn = noop;
+        }
+    } catch(e) {}
+})();
+
 const StorageManager = {
     TOKEN_KEY: 'bsis_auth_token',
     USER_KEY: 'bsis_user_profile',
