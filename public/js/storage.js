@@ -18,6 +18,7 @@ const StorageManager = {
     OFFLINE_QUEUE_KEY: 'bsis_offline_attendance_queue',
     SYNC_EVENT_KEY: 'bsis_auth_sync_event',
     _broadcastChannel: null,
+    _lastLogoutHandled: 0,
 
     getBroadcastChannel() {
         if (!this._broadcastChannel && typeof BroadcastChannel !== 'undefined') {
@@ -49,6 +50,7 @@ const StorageManager = {
     },
 
     setToken(token) {
+        this._lastLogoutHandled = 0;
         try { localStorage.setItem(this.TOKEN_KEY, token); } catch (e) {}
         try { sessionStorage.setItem(this.TOKEN_KEY, token); } catch (e) {}
     },
@@ -82,11 +84,19 @@ const StorageManager = {
         localStorage.setItem(this.DEVICE_KEY, credential);
     },
 
-    clearSession() {
+    clearSession(broadcast = true) {
+        const hadToken = !!(localStorage.getItem(this.TOKEN_KEY) || sessionStorage.getItem(this.TOKEN_KEY));
+        const hadUser = !!(localStorage.getItem(this.USER_KEY) || sessionStorage.getItem(this.USER_KEY));
+
         try { sessionStorage.removeItem(this.TOKEN_KEY); } catch (e) {}
         try { sessionStorage.removeItem(this.USER_KEY); } catch (e) {}
         try { localStorage.removeItem(this.TOKEN_KEY); } catch (e) {}
         try { localStorage.removeItem(this.USER_KEY); } catch (e) {}
+
+        // Only broadcast if there was actually an active session before clearing and broadcast is requested
+        if ((!hadToken && !hadUser) || !broadcast) {
+            return;
+        }
 
         // Broadcast to other open tabs using BroadcastChannel
         try {
@@ -106,8 +116,36 @@ const StorageManager = {
     },
 
     handleCrossTabLogout() {
+        // Prevent rapid duplicate execution (e.g. BroadcastChannel + storage event firing simultaneously)
+        const now = Date.now();
+        if (this._lastLogoutHandled && (now - this._lastLogoutHandled < 2500)) {
+            return;
+        }
+
+        const hadToken = !!(localStorage.getItem(this.TOKEN_KEY) || sessionStorage.getItem(this.TOKEN_KEY));
+        const hadUser = !!(localStorage.getItem(this.USER_KEY) || sessionStorage.getItem(this.USER_KEY));
+
+        // Always ensure local session is purged
         try { sessionStorage.removeItem(this.TOKEN_KEY); } catch (e) {}
         try { sessionStorage.removeItem(this.USER_KEY); } catch (e) {}
+        try { localStorage.removeItem(this.TOKEN_KEY); } catch (e) {}
+        try { localStorage.removeItem(this.USER_KEY); } catch (e) {}
+
+        // If this tab had NO active session, silently exit (NEVER show toast or re-navigate!)
+        if (!hadToken && !hadUser) {
+            return;
+        }
+
+        // If this tab is already on the login screen, do not show any toast
+        const currentHash = window.location.hash || '';
+        const isLoginHash = currentHash === '#login' || currentHash === '';
+        const isInLoginView = document.documentElement.classList.contains('in-login-view') || 
+                              (document.body && document.body.classList.contains('in-login-view'));
+        if (isLoginHash && isInLoginView) {
+            return;
+        }
+
+        this._lastLogoutHandled = now;
 
         // Invalidate Admin Console view if loaded
         if (typeof AdminApp !== 'undefined' && AdminApp.handleRoute) {
@@ -123,11 +161,12 @@ const StorageManager = {
         }
 
         // Invalidate Student App view if loaded
-        if (typeof StudentApp !== 'undefined' && StudentApp.handleRoute) {
+        const studentController = typeof StudentPWA !== 'undefined' ? StudentPWA : (typeof StudentApp !== 'undefined' ? StudentApp : null);
+        if (studentController && studentController.handleRoute) {
             window.location.hash = '#login';
-            StudentApp.handleRoute();
-            if (typeof StudentApp.showToast === 'function') {
-                StudentApp.showToast('Session ended. You were signed out from another tab or window.');
+            studentController.handleRoute();
+            if (typeof studentController.showToast === 'function') {
+                studentController.showToast('Session ended. You were signed out from another tab or window.');
             }
         }
     },
@@ -177,8 +216,46 @@ const StorageManager = {
             const json = await response.json().catch(() => null);
 
             if (response.status === 401) {
-                this.clearSession();
-                this.handleCrossTabLogout();
+                // Do NOT trigger session termination on authentication or password reset requests
+                const isAuthAttempt = endpoint.includes('/api/auth/login') ||
+                                      endpoint.includes('/api/auth/forgot-password') ||
+                                      endpoint.includes('/api/auth/reset-password') ||
+                                      endpoint.includes('/api/onboarding');
+
+                if (!isAuthAttempt) {
+                    const hadToken = !!(localStorage.getItem(this.TOKEN_KEY) || sessionStorage.getItem(this.TOKEN_KEY));
+                    this.clearSession(false); // Clean up locally without cascading broadcast
+
+                    if (hadToken) {
+                        const currentHash = window.location.hash || '';
+                        const isLoginHash = currentHash === '#login' || currentHash === '';
+                        const isInLoginView = document.documentElement.classList.contains('in-login-view') || 
+                                              (document.body && document.body.classList.contains('in-login-view'));
+
+                        if (!isLoginHash || !isInLoginView) {
+                            if (typeof AdminApp !== 'undefined' && AdminApp.handleRoute) {
+                                AdminApp.currentActiveLiveEvent = null;
+                                const banner = document.getElementById('admin-live-event-banner');
+                                if (banner) banner.classList.add('d-none');
+                                document.documentElement.classList.add('in-login-view');
+                                window.location.hash = '#login';
+                                AdminApp.handleRoute();
+                                if (typeof AdminApp.showToast === 'function') {
+                                    AdminApp.showToast('Your session has expired. Please sign in again.', 'warning');
+                                }
+                            } else {
+                                const studentController = typeof StudentPWA !== 'undefined' ? StudentPWA : (typeof StudentApp !== 'undefined' ? StudentApp : null);
+                                if (studentController && studentController.handleRoute) {
+                                    window.location.hash = '#login';
+                                    studentController.handleRoute();
+                                    if (typeof studentController.showToast === 'function') {
+                                        studentController.showToast('Your session has expired. Please sign in again.');
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
             return {
@@ -203,14 +280,14 @@ try {
 
 // Listen for cross-tab storage changes (fired by other tabs on the same origin)
 window.addEventListener('storage', (e) => {
-    if (e.key === StorageManager.TOKEN_KEY && !e.newValue) {
-        StorageManager.handleCrossTabLogout();
-    } else if (e.key === StorageManager.SYNC_EVENT_KEY && e.newValue) {
+    if (e.key === StorageManager.SYNC_EVENT_KEY && e.newValue) {
         try {
             const payload = JSON.parse(e.newValue);
             if (payload && payload.action === 'logout') {
                 StorageManager.handleCrossTabLogout();
             }
         } catch (err) {}
+    } else if (e.key === StorageManager.TOKEN_KEY && !e.newValue && e.oldValue) {
+        StorageManager.handleCrossTabLogout();
     }
 });

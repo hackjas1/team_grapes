@@ -1845,6 +1845,10 @@ const StudentPWA = {
     },
 
     showToast(msg) {
+        const existing = document.querySelectorAll('.bsis-toast');
+        for (const el of existing) {
+            if (el.innerText === msg) return;
+        }
         const toast = document.createElement('div');
         toast.className = 'bsis-toast';
         toast.innerText = msg;

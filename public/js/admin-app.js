@@ -5849,6 +5849,14 @@ const AdminApp = {
             document.body.appendChild(container);
         }
 
+        // Prevent stacking duplicate toasts with the exact same message
+        const existingToasts = container.querySelectorAll('.bsis-toast-item span');
+        for (const span of existingToasts) {
+            if (span.innerText === msg) {
+                return;
+            }
+        }
+
         const iconMap = {
             success: 'bi-check-circle-fill text-success',
             danger: 'bi-exclamation-triangle-fill text-danger',
